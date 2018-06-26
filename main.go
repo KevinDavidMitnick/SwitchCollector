@@ -37,13 +37,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeMessage(conn *websocket.Conn, mt int, msg []byte) {
-	timeout := time.After(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
-		case <-timeout:
+		case <-ticker.C:
 			conn.WriteMessage(mt, msg)
-		default:
-			fmt.Println("should not be here.")
 		}
 	}
 }

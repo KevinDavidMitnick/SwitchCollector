@@ -149,7 +149,7 @@ func handleUdpData(data []byte, size int) {
 	VisitData.save(strings.TrimSpace(ip), timestamp)
 
 	//fmt.Println("recv data is:" + string(data))
-	fmt.Println("visit data size is:", VisitData.size())
+	//fmt.Println("visit data size is:", VisitData.size())
 	//VisitData.display()
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/gaochao1/gosnmp"
 	"github.com/gaochao1/sw"
 	"log"
+	"reflect"
 	"time"
 )
 
@@ -74,8 +75,17 @@ func getFlow(ip string, community string, oid string, timeout int) (uint64, erro
 
 	if err == nil {
 		for _, pdu := range snmpPDUs {
-			return pdu.Value.(uint64), err
+			switch reflect.TypeOf(pdu.Value).Kind() {
+			case reflect.Uint64:
+				return pdu.Value.(uint64), err
+			case reflect.Uint32:
+				return uint64(pdu.Value.(uint32)), err
+			case reflect.Int:
+				return uint64(pdu.Value.(int)), err
+			}
 		}
+	} else {
+		log.Println(err.Error())
 	}
 
 	return 0, err

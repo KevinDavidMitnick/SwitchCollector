@@ -5,6 +5,7 @@ import (
 	"github.com/toolkits/file"
 	"github.com/yubo/rrdlite"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -99,7 +100,8 @@ func FetchFromFile(filename string, cf string, start, end int64, step int) map[i
 		if math.IsNaN(val) {
 			data[ts] = 0
 		} else {
-			data[ts] = val
+			strval := strconv.FormatFloat(val, 'f', 2, 64)
+			data[ts], _ = strconv.ParseFloat(strval, 64)
 		}
 	}
 

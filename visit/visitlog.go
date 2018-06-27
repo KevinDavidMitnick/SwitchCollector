@@ -22,9 +22,9 @@ type UdpData struct {
 	Data map[string]*AccessIp
 }
 
-type VistLog struct {
+type VisitLog struct {
 	Data           []*AccessIp `json:"Data"`
-	StatisticsTime int64       `json:"time.Millisecond"`
+	StatisticsTime int64       `json:"StatisticsTime"`
 }
 
 var VisitData *UdpData
@@ -58,6 +58,39 @@ func (udp *UdpData) display() {
 	}
 }
 
+func (udp *UdpData) search(expire int64) *VisitLog {
+	udp.RLock()
+	defer udp.RUnlock()
+	now := time.Now().Unix()
+	startTime := now - expire
+	var data []*AccessIp = make([]*AccessIp, 0)
+
+	udp.display()
+
+	for _, accessIp := range udp.Data {
+		if accessIp.LastTime >= startTime {
+			data = append(data, accessIp)
+		}
+	}
+
+	return &VisitLog{Data: data, StatisticsTime: now}
+}
+
+func (udp *UdpData) cleanStaleData() {
+	udp.Lock()
+	defer udp.Unlock()
+	fmt.Println("start clean stale data.")
+	expire := g.Config().Expire
+	startTime := time.Now().Unix() - int64(expire)
+
+	for ip, accessIp := range udp.Data {
+		if accessIp.LastTime < startTime {
+			delete(udp.Data, ip)
+		}
+	}
+
+}
+
 func (udp *UdpData) size() int {
 	udp.RLock()
 	defer udp.RUnlock()
@@ -66,8 +99,12 @@ func (udp *UdpData) size() int {
 }
 
 func NewInstance() *UdpData {
-	len := g.Config().Expire / g.Config().Interval
+	len := g.Config().Expire
 	return &UdpData{Data: make(map[string]*AccessIp, len)}
+}
+
+func Search(expire int64) *VisitLog {
+	return VisitData.search(expire)
 }
 
 func StartUdpServ() {
@@ -111,11 +148,22 @@ func handleUdpData(data []byte, size int) {
 	ip := strings.Split(ip_port, ":")[1]
 	VisitData.save(strings.TrimSpace(ip), timestamp)
 
-	fmt.Println("recv data is:" + string(data))
+	//fmt.Println("recv data is:" + string(data))
 	fmt.Println("visit data size is:", VisitData.size())
-	VisitData.display()
+	//VisitData.display()
 }
 
 func NewVisitData() {
 	VisitData = NewInstance()
+}
+
+func CleanStale() {
+	expire := time.Duration(g.Config().Expire)
+	ticker := time.NewTicker(expire * time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			VisitData.cleanStaleData()
+		}
+	}
 }

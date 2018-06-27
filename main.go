@@ -1,30 +1,57 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/SwitchCollector/flow"
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/visit"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 )
 
-type Flow struct {
-	Time            int64 `json:"Time"`
-	InFlowQuantity  int   `json:"InFlowQuantity"`
-	OutFlowQuantity int   `json:"OutFlowQuantity"`
-}
-
-type FlowQuantity struct {
-	Data []*Flow `json:"Data"`
-}
-
 func FlowQuantityBytes(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "parse data error", http.StatusBadRequest)
+		return
+	}
+	period := strings.TrimSpace(r.Form.Get("Period"))
+	expire, err := strconv.ParseInt(period, 10, 64)
+	if err != nil {
+		http.Error(w, "param Period format error.", http.StatusBadRequest)
+		return
+	}
+	flowQuantity := flow.Search(expire * 60)
+	ret, err1 := json.Marshal(flowQuantity)
+	if err1 != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Write(ret)
 
 }
 
 func VisitLog(w http.ResponseWriter, r *http.Request) {
-
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "parse data error", http.StatusBadRequest)
+		return
+	}
+	period := strings.TrimSpace(r.Form.Get("Period"))
+	expire, err := strconv.ParseInt(period, 10, 64)
+	if err != nil {
+		http.Error(w, "param Period format error.", http.StatusBadRequest)
+		return
+	}
+	visitLog := visit.Search(expire * 60)
+	ret, err1 := json.Marshal(visitLog)
+	if err1 != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Write(ret)
 }
 
 func main() {
@@ -46,5 +73,7 @@ func main() {
 
 	visit.NewVisitData()
 	go visit.StartUdpServ()
+	go visit.CleanStale()
+
 	select {}
 }

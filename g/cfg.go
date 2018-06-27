@@ -15,11 +15,20 @@ type HttpConfig struct {
 	Addr string `json:"addr"`
 }
 
+type SwitchConfig struct {
+	Ip         string `json:"ip"`
+	Community  string `json:"community"`
+	InFlowOid  string `json:"inFlowOid"`
+	OutFlowOid string `json:"outFlowOid"`
+	Timeout    int    `json:"timeout"`
+}
+
 type GlobalConfig struct {
-	Udp      *UdpConfig  `json:"udp"`
-	Http     *HttpConfig `json:"http"`
-	Expire   int         `json:"expire"`
-	Interval int         `json:"interval"`
+	Udp      *UdpConfig    `json:"udp"`
+	Http     *HttpConfig   `json:"http"`
+	Expire   int           `json:"expire"`
+	Interval int           `json:"interval"`
+	Switch   *SwitchConfig `json:"switch"`
 }
 
 var (

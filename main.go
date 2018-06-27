@@ -75,5 +75,7 @@ func main() {
 	go visit.StartUdpServ()
 	go visit.CleanStale()
 
+	go flow.Collect()
+
 	select {}
 }

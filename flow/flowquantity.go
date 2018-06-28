@@ -72,6 +72,23 @@ func Search(expire int64) *FlowQuantity {
 	return &flowQuantity
 }
 
+func Query(expire int64) *FlowQuantity {
+	endTime := time.Now().Unix()
+	startTime := endTime - expire
+
+	var flowQuantity FlowQuantity
+	flowQuantity = FlowQuantity{Data: make([]*Flow, 0)}
+
+	datas := queue.FetchAllMatch(startTime)
+
+	for _, data := range datas {
+		flow := Flow{Time: data.Timestamp, InFlowQuantity: data.InSpeed, OutFlowQuantity: data.OutSpeed}
+		flowQuantity.Data = append(flowQuantity.Data, &flow)
+	}
+
+	return &flowQuantity
+}
+
 func getFlow(ip string, community string, oid string, timeout int) (uint64, error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -139,18 +156,18 @@ func collect() {
 	if inFlow < quick.InSpeed {
 		quick.InSpeed = inFlow
 	}
-	strin := strconv.FormatFloat(float64(inFlow-quick.InSpeed)/float64(interval), 'f', 2, 64)
+	strin := strconv.FormatFloat(float64(inFlow-quick.InSpeed)/float64(interval)/1000, 'f', 2, 64)
 	inSpeed, _ := strconv.ParseFloat(strin, 64)
 
 	if outFlow < quick.OutSpeed {
 		quick.OutSpeed = outFlow
 	}
-	strout := strconv.FormatFloat(float64(outFlow-quick.OutSpeed)/float64(interval), 'f', 2, 64)
+	strout := strconv.FormatFloat(float64(outFlow-quick.OutSpeed)/float64(interval)/1000, 'f', 2, 64)
 	outSpeed, _ := strconv.ParseFloat(strout, 64)
 
 	item := store.Item{InSpeed: inSpeed, OutSpeed: outSpeed, Timestamp: timestamp}
 	queue.PushFront(&item)
-	log.Println("put value:", inSpeed, outSpeed, "cache size is :", queue.Len())
+	log.Println("put value:", inSpeed, outSpeed, "cache size is :", queue.Len(), "timestamp is:", timestamp)
 	quick.InSpeed = inFlow
 	quick.OutSpeed = outFlow
 }
@@ -162,6 +179,20 @@ func Collect() {
 		select {
 		case <-ticker.C:
 			collect()
+		}
+	}
+}
+
+func CleanStale() {
+	expire := time.Duration(g.Config().Expire)
+	ticker := time.NewTicker(expire * time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			timestamp := time.Now().Unix() - int64(g.Config().Expire)
+			log.Println("start clean flow stale data,size is:", queue.Len())
+			queue.PopAllStale(timestamp)
+			log.Println("finish start clean flow stale data,size is:", queue.Len())
 		}
 	}
 }

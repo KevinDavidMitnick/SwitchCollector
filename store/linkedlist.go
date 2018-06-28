@@ -85,7 +85,7 @@ func (slist *SafeLinkedList) PopAllStale(timestamp int64) {
 	defer slist.Unlock()
 
 	p := slist.L.Back()
-	for p != nil {
+	for p != nil && p.Prev() != nil {
 		p = p.Prev()
 		if p.Next().Value.(*Item).Timestamp < timestamp {
 			slist.L.Remove(p.Next())
@@ -96,16 +96,16 @@ func (slist *SafeLinkedList) PopAllStale(timestamp int64) {
 }
 
 //FetchAllMatch get time bigger than timestamp items
-func (slist *SafeLinkedList) FetchAllMatch(timestamp int64) []*list.Element {
+func (slist *SafeLinkedList) FetchAllMatch(timestamp int64) []*Item {
 	slist.Lock()
 	defer slist.Unlock()
 
-	ret := make([]*list.Element, 0)
+	ret := make([]*Item, 0)
 
 	p := slist.L.Front()
 	for p != nil {
 		if p.Value.(*Item).Timestamp > timestamp {
-			ret = append(ret, p.Value.(*list.Element))
+			ret = append(ret, p.Value.(*Item))
 			p = p.Next()
 		} else {
 			break

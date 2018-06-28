@@ -24,7 +24,7 @@ func FlowQuantityBytes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "param Period format error.", http.StatusBadRequest)
 		return
 	}
-	flowQuantity := flow.Search(expire * 60)
+	flowQuantity := flow.Query(expire * 60)
 	ret, err1 := json.Marshal(flowQuantity)
 	if err1 != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -76,6 +76,7 @@ func main() {
 	go visit.CleanStale()
 
 	go flow.Collect()
+	go flow.CleanStale()
 
 	select {}
 }

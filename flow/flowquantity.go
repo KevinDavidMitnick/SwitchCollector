@@ -3,10 +3,13 @@ package flow
 import (
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/rrdtool"
+	"github.com/SwitchCollector/store"
 	"github.com/gaochao1/gosnmp"
 	"github.com/gaochao1/sw"
 	"log"
 	"reflect"
+	"strconv"
+	"sync"
 	"time"
 )
 
@@ -18,6 +21,19 @@ type Flow struct {
 
 type FlowQuantity struct {
 	Data []*Flow `json:"Data"`
+}
+
+type Cache struct {
+	InSpeed  uint64 `json:"inSpeed"`
+	OutSpeed uint64 `json:"outSpeed"`
+	sync.RWMutex
+}
+
+var quick Cache
+var queue *store.SafeLinkedList
+
+func init() {
+	queue = store.NewSafeLinkedList()
 }
 
 func Search(expire int64) *FlowQuantity {
@@ -106,13 +122,46 @@ func collectFlowQuantity() {
 	go collectAndFlushFlow(sh.Ip, sh.Community, sh.OutFlowOid, sh.Timeout, timestamp, "out.rrd")
 }
 
+func collect() {
+	log.Println("start collect flow.")
+	sh := g.Config().Switch
+	interval := g.Config().Interval
+	timestamp := time.Now().Unix()
+	inFlow, err1 := getFlow(sh.Ip, sh.Community, sh.InFlowOid, sh.Timeout)
+	outFlow, err2 := getFlow(sh.Ip, sh.Community, sh.OutFlowOid, sh.Timeout)
+	if err1 != nil || err2 != nil {
+		return
+	}
+
+	quick.Lock()
+	defer quick.Unlock()
+
+	if inFlow < quick.InSpeed {
+		quick.InSpeed = inFlow
+	}
+	strin := strconv.FormatFloat(float64(inFlow-quick.InSpeed)/float64(interval), 'f', 2, 64)
+	inSpeed, _ := strconv.ParseFloat(strin, 64)
+
+	if outFlow < quick.OutSpeed {
+		quick.OutSpeed = outFlow
+	}
+	strout := strconv.FormatFloat(float64(outFlow-quick.OutSpeed)/float64(interval), 'f', 2, 64)
+	outSpeed, _ := strconv.ParseFloat(strout, 64)
+
+	item := store.Item{InSpeed: inSpeed, OutSpeed: outSpeed, Timestamp: timestamp}
+	queue.PushFront(&item)
+	log.Println("put value:", inSpeed, outSpeed, "cache size is :", queue.Len())
+	quick.InSpeed = inFlow
+	quick.OutSpeed = outFlow
+}
+
 func Collect() {
 	interval := time.Duration(g.Config().Interval)
 	ticker := time.NewTicker(interval * time.Second)
 	for {
 		select {
 		case <-ticker.C:
-			collectFlowQuantity()
+			collect()
 		}
 	}
 }

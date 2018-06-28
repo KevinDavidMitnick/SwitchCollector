@@ -98,7 +98,7 @@ func getFlow(ip string, community string, oid string, timeout int) (uint64, erro
 	method := "get"
 	var snmpPDUs []gosnmp.SnmpPDU
 	var err error
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 10; i++ {
 		snmpPDUs, err = sw.RunSnmp(ip, community, oid, method, timeout)
 		if len(snmpPDUs) > 0 {
 			break
@@ -166,8 +166,11 @@ func collect() {
 	outSpeed, _ := strconv.ParseFloat(strout, 64)
 
 	item := store.Item{InSpeed: inSpeed, OutSpeed: outSpeed, Timestamp: timestamp}
-	queue.PushFront(&item)
+	if quick.InSpeed != 0 && quick.OutSpeed != 0 {
+		queue.PushFront(&item)
+	}
 	log.Println("put value:", inSpeed, outSpeed, "cache size is :", queue.Len(), "timestamp is:", timestamp)
+
 	quick.InSpeed = inFlow
 	quick.OutSpeed = outFlow
 }

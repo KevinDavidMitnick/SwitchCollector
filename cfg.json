@@ -13,5 +13,5 @@
         "timeout": 1000
     },
     "expire" : 3600,
-    "interval": 5
+    "interval": 10
 }

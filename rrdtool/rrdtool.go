@@ -27,7 +27,7 @@ func create(filename string, item *Item) error {
 	step := uint(item.Step)
 
 	c := rrdlite.NewCreator(filename, start, step)
-	c.DS("metric", item.DsType, step*2, 0, RRA1PointCnt)
+	c.DS("metric", item.DsType, step*2, 'U', 'U')
 
 	// 设置各种归档策略
 	// 默认1分钟一个点存 3d

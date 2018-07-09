@@ -127,7 +127,7 @@ func HandleUdpData(data []byte, size int) {
 	//VisitData.display()
 }
 
-func cleanStale() {
+func CleanStale() {
 	expire := time.Duration(g.Config().Expire)
 	ticker := time.NewTicker(expire * time.Second)
 	for {
@@ -138,7 +138,6 @@ func cleanStale() {
 	}
 }
 
-func init() {
+func Init() {
 	VisitData = NewInstance()
-	go cleanStale()
 }

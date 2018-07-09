@@ -1,0 +1,33 @@
+{
+   "ip" : "10.21.1.200",
+   "community": "Huayun123",
+   "template" : {
+       "class" : "HUAWEI",
+       "type"  : "HUAWEI_CE6810-24S2Q-LI"
+   },
+   "extension" : {
+       "enable" : true,
+       "metrics" : {
+           "风扇状态" : {
+               "oid" : ".1.1.1.1.1.1.1.13",
+               "interval" : 10
+           }
+       },
+       "infos" : {
+           "网络接口数" : {
+               "oid" : ".1.1.1.15.1.2.1.1.4",
+               "interval" : 10
+           }
+       },
+       "multimetrics":{
+            "interface" : {
+            }
+        },
+        "multiinfo": {
+            "错误丢包数" : {
+                "oid" : ".1.1.1.1.1.1.1.14",
+                "interval" : 10
+            }
+        }
+    }
+}

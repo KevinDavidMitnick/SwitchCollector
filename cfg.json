@@ -1,16 +1,17 @@
 {
     "udp" : {
+        "enable": true,
         "addr" : "0.0.0.0:514"
     },
     "http" : {
+        "enable": true,
         "addr" : "0.0.0.0:8080"
     },
-    "switch" : {
-        "ip" : "10.0.20.254",
-        "community": "huayun.2017",
-        "inFlowOid": ".1.3.6.1.2.1.31.1.1.1.6.3",
-        "outFlowOid": ".1.3.6.1.2.1.31.1.1.1.10.3",
-        "timeout": 1000
+    "templates" : {
+        "dir" : "./templates"
+    },
+    "netdevices" : {
+        "dir": "./netdevices"
     },
     "expire" : 3600,
     "interval": 10

@@ -50,10 +50,10 @@ map[ip]AccessIP
         "addr" : "0.0.0.0:1622"
     },
     "template" : {
-        "path" : "/opt/switch/templates"
+        "dir" : "/opt/switch/templates"
     },
     "switch" : {
-        "path": "/opt/switch/devices"
+        "dir": "/opt/switch/devices"
     }
     "expire" : 3600,
     "interval": 10
@@ -64,14 +64,14 @@ map[ip]AccessIP
 ## template 目录结构应当如下: ##
   templates
   ----h3c
-  --------h3c-v1
-  --------h3c-v2
+  --------h3c-v1.json
+  --------h3c-v2.json
   ----huawei
-  --------huawei-v1
+  --------huawei-v1.json
   ----ciso
-  --------ciso-v1
+  --------ciso-v1.json
   ----other
-  --------other1
+  --------other1.json
 
 说明: 程序启动的时候，应该加载template配置目录下的所有交换机类型和对应的模板。
 
@@ -187,3 +187,13 @@ map[ip]AccessIP
     }
 }
 ```
+
+
+## 设计流程 ##
+1. 加载配置文件,获取主配置信息。
+2. 加载模板文件，获取模板对应信息。
+3. 加载网络设备文件，获取网络设备对应的配置信息。
+4. 根据配置信息,采集相应的指标,存储到内存中
+5. 启动相应的http/udp/websocket服务，拉取信息
+6. 定时将内存中的数据刷到backendz中。
+

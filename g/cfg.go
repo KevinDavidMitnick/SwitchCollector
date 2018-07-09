@@ -118,7 +118,7 @@ func listDir(dirpath string) (files []string, err error) {
 func LoadTemplatesConfig() {
 	lock.Lock()
 	defer lock.Unlock()
-	dir := Config().Templates.Dir
+	dir := config.Templates.Dir
 
 	files, e := listDir(dir)
 	if e != nil || len(files) == 0 {

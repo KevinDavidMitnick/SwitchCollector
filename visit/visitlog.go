@@ -83,10 +83,11 @@ func (ips *IpHistory) cleanStaleData() {
 			break
 		}
 		last := len - 1
-		for ; last >= 0; last-- {
+		for last >= 0 {
 			if history[last] < startTime {
 				break
 			}
+			last--
 		}
 		ips.History[ip] = history[last:]
 	}

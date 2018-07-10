@@ -1,7 +1,6 @@
 package visit
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/SwitchCollector/g"
 	"log"
@@ -14,7 +13,6 @@ import (
 type AccessIp struct {
 	IP         string `json:"IP"`
 	VisitCount int    `json:"VisitCount"`
-	LastTime   int64  `json:"LastTime"`
 }
 
 type UdpData struct {
@@ -27,75 +25,79 @@ type VisitLog struct {
 	StatisticsTime int64       `json:"StatisticsTime"`
 }
 
-var VisitData *UdpData
+type IpHistory struct {
+	sync.RWMutex
+	History map[string][]int64 `json:"history"`
+}
 
-func (udp *UdpData) save(ip string, timestamp int64) {
-	udp.Lock()
-	defer udp.Unlock()
-	if _, ok := udp.Data[ip]; ok {
-		udp.Data[ip].VisitCount += 1
-		udp.Data[ip].LastTime = timestamp
+var (
+	Ips *IpHistory
+)
+
+func (ips *IpHistory) save(ip string, timestamp int64) {
+	ips.Lock()
+	defer ips.Unlock()
+	if _, ok := ips.History[ip]; ok {
+		ips.History[ip] = append(ips.History[ip], timestamp)
 	} else {
-		udp.Data[ip] = &AccessIp{IP: ip, VisitCount: 1, LastTime: timestamp}
+		ips.History[ip] = []int64{timestamp}
 	}
 }
 
-func (udp *UdpData) get(ip string) *AccessIp {
-	udp.RLock()
-	defer udp.RUnlock()
-	if data, ok := udp.Data["ip"]; ok {
-		return data
-	}
-	return nil
-}
-
-func (udp *UdpData) display() {
-	udp.RLock()
-	defer udp.RUnlock()
-
-	if data, err := json.Marshal(udp.Data); err == nil {
-		fmt.Println(string(data))
-	}
-}
-
-func (udp *UdpData) search(expire int64) *VisitLog {
-	udp.RLock()
-	defer udp.RUnlock()
+func (ips *IpHistory) search(expire int64) *VisitLog {
+	ips.RLock()
+	defer ips.RUnlock()
 	now := time.Now().Unix()
 	startTime := now - expire
 	var data []*AccessIp = make([]*AccessIp, 0)
 
-	udp.display()
-
-	for _, accessIp := range udp.Data {
-		if accessIp.LastTime >= startTime {
-			data = append(data, accessIp)
+	for ip, history := range ips.History {
+		len := len(history)
+		var accessIp AccessIp
+		accessIp.IP = ip
+		accessIp.VisitCount = 0
+		for i := len - 1; i >= 0; i-- {
+			if startTime <= history[i] {
+				accessIp.VisitCount += 1
+			}
+		}
+		if accessIp.VisitCount > 0 {
+			data = append(data, &accessIp)
 		}
 	}
 
 	return &VisitLog{Data: data, StatisticsTime: now}
 }
 
-func (udp *UdpData) cleanStaleData() {
-	udp.Lock()
-	defer udp.Unlock()
+func (ips *IpHistory) cleanStaleData() {
+	ips.Lock()
+	defer ips.Unlock()
 	fmt.Println("start clean stale data.")
 	expire := g.Config().Expire
 	startTime := time.Now().Unix() - int64(expire)
 
-	for ip, accessIp := range udp.Data {
-		if accessIp.LastTime < startTime {
-			delete(udp.Data, ip)
+	for ip, history := range ips.History {
+		len := len(history)
+		if history[len-1] < startTime {
+			delete(ips.History, ip)
+			break
 		}
+		last := len - 1
+		for ; last >= 0; last-- {
+			if history[last] < startTime {
+				break
+			}
+		}
+		ips.History[ip] = history[last:]
 	}
 
 }
 
-func (udp *UdpData) size() int {
-	udp.RLock()
-	defer udp.RUnlock()
+func (ips *IpHistory) size() int {
+	ips.RLock()
+	defer ips.RUnlock()
 
-	return len(udp.Data)
+	return len(ips.History)
 }
 
 func NewInstance() *UdpData {
@@ -104,7 +106,7 @@ func NewInstance() *UdpData {
 }
 
 func Search(expire int64) *VisitLog {
-	return VisitData.search(expire)
+	return Ips.search(expire)
 }
 
 func StartUdpServ() {
@@ -146,15 +148,15 @@ func handleUdpData(data []byte, size int) {
 		return
 	}
 	ip := strings.Split(ip_port, ":")[1]
-	VisitData.save(strings.TrimSpace(ip), timestamp)
+	Ips.save(strings.TrimSpace(ip), timestamp)
 
 	//fmt.Println("recv data is:" + string(data))
-	//fmt.Println("visit data size is:", VisitData.size())
-	//VisitData.display()
 }
 
 func NewVisitData() {
-	VisitData = NewInstance()
+	Ips = &IpHistory{
+		History: make(map[string][]int64),
+	}
 }
 
 func CleanStale() {
@@ -163,7 +165,7 @@ func CleanStale() {
 	for {
 		select {
 		case <-ticker.C:
-			VisitData.cleanStaleData()
+			Ips.cleanStaleData()
 		}
 	}
 }

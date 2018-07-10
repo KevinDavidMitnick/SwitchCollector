@@ -42,20 +42,37 @@ type Metric struct {
 }
 
 type MetricTemplate struct {
-	Class        string            `json:"class"`
-	Type         string            `json:"type"`
-	Metrics      map[string]Metric `json:"metrics"`
-	Infos        map[string]Metric `json:"infos"`
-	MultiMetrics map[string]Metric `json:"multimetrics"`
-	MultiInfos   map[string]Metric `json:"multiinfos"`
-	Timeout      int               `json:"timeout"`
-	Interval     int               `json:"interval"`
+	Class        string             `json:"class"`
+	Type         string             `json:"type"`
+	Metrics      map[string]*Metric `json:"metrics"`
+	Infos        map[string]*Metric `json:"infos"`
+	MultiMetrics map[string]*Metric `json:"multimetrics"`
+	MultiInfos   map[string]*Metric `json:"multiinfos"`
+	Timeout      int                `json:"timeout"`
+	Interval     int                `json:"interval"`
+}
+
+type Extension struct {
+	Enabled      bool               `json:"enabled"`
+	Metrics      map[string]*Metric `json:"metrics"`
+	Infos        map[string]*Metric `json:"infos"`
+	MultiMetrics map[string]*Metric `json:"multimetrics"`
+	MultiInfos   map[string]*Metric `json:"multiinfos"`
+}
+
+type NetDevice struct {
+	Ip        string     `json:"ip"`
+	Community string     `json:"community"`
+	Class     string     `json:"class"`
+	Type      string     `json:"type"`
+	Extension *Extension `json:"extension"`
 }
 
 var (
 	ConfigFile string
 	config     *GlobalConfig
-	metricM    map[string]*MetricTemplate
+	metricT    map[string]*MetricTemplate
+	netDevs    map[string]*NetDevice
 	lock       = new(sync.RWMutex)
 )
 
@@ -63,6 +80,18 @@ func Config() *GlobalConfig {
 	lock.RLock()
 	defer lock.RUnlock()
 	return config
+}
+
+func MetricT() map[string]*MetricTemplate {
+	lock.RLock()
+	defer lock.RUnlock()
+	return metricT
+}
+
+func NetDevs() map[string]*NetDevice {
+	lock.RLock()
+	defer lock.RUnlock()
+	return netDevs
 }
 
 func ParseConfig(cfg string) {
@@ -125,7 +154,7 @@ func LoadTemplatesConfig() {
 		log.Fatalln("template dir load err...")
 	}
 
-	metricM = make(map[string]*MetricTemplate)
+	metricT = make(map[string]*MetricTemplate)
 
 	for _, file := range files {
 		f, err := os.Open(file)
@@ -138,12 +167,37 @@ func LoadTemplatesConfig() {
 		if err1 != nil {
 			log.Fatalln("template file decode error:", file)
 		}
-		metricM[metricTemplate.Type] = &metricTemplate
+		metricT[metricTemplate.Type] = &metricTemplate
 	}
 	log.Println("load template config dir:", dir, "successfully")
-	log.Println(metricM)
+	log.Println(metricT)
 }
 
-func ParseNetDevicesConfig(filename string) {
+func LoadNetDevices() {
+	lock.Lock()
+	defer lock.Unlock()
+	dir := config.NetDevices.Dir
 
+	files, e := listDir(dir)
+	if e != nil || len(files) == 0 {
+		log.Fatalln("netdevics dir load err...")
+	}
+
+	netDevs = make(map[string]*NetDevice)
+
+	for _, file := range files {
+		f, err := os.Open(file)
+		if err != nil {
+			log.Fatalln("open file:", file, "failed")
+		}
+		defer f.Close()
+		var netDevice NetDevice
+		err1 := json.NewDecoder(f).Decode(&netDevice)
+		if err1 != nil {
+			log.Fatalln("netdevices file decode error:", file)
+		}
+		netDevs[netDevice.Ip] = &netDevice
+	}
+	log.Println("load netdevices config dir:", dir, "successfully")
+	log.Println(netDevs)
 }

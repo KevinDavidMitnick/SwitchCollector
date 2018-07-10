@@ -20,6 +20,7 @@ func init() {
 
 	g.ParseConfig(*cfg)
 	g.LoadTemplatesConfig()
+	g.LoadNetDevices()
 }
 
 func main() {

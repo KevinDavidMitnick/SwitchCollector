@@ -1,19 +1,17 @@
 {
    "ip" : "10.0.20.254",
    "community": "huayun.2017",
-   "template" : {
-       "class" : "H3C",
-       "type"  : "H3C_S5560-54C-EI"
-   },
+   "class" : "H3C",
+   "type"  : "H3C_S5560-54C-EI",
    "extension" : {
        "enable" : true,
-       "metric" : {
+       "metrics" : {
            "风扇状态" : {
                "oid" : ".1.1.1.1.1.1.1.13",
                "interval" : 10
            }
        },
-       "info" : {
+       "infos" : {
            "网络接口数" : {
                "oid" : ".1.1.1.15.1.2.1.1.4",
                "interval" : 10

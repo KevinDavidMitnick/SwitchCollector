@@ -26,7 +26,7 @@ var (
 	devices Devices
 )
 
-func mergeMetrics(dev *g.NetDevice, metricT *MetricTemplate) *MetricDevice {
+func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	var device MetricDevice
 	device.Ip = dev.Ip
 	device.Community = dev.Community
@@ -60,9 +60,9 @@ func mergeMetrics(dev *g.NetDevice, metricT *MetricTemplate) *MetricDevice {
 	return &device
 }
 
-func (d *Device) Init() {
+func Init() {
 	if devices.task == nil {
-		devices.task = make([]*MetricDevice)
+		devices.task = make([]*MetricDevice, 0)
 	}
 	metricM := g.MetricT()
 	netDevs := g.NetDevs()
@@ -73,18 +73,18 @@ func (d *Device) Init() {
 	}
 }
 
-func (d *Device) Update() {
+func (d *Devices) Update() {
 
 }
 
-func (d *Device) Collect() {
+func (d *Devices) Collect() {
 
 }
 
-func (d *Device) Flush() {
+func (d *Devices) Flush() {
 
 }
 
-func (d *Device) CleanStale() {
+func (d *Devices) CleanStale() {
 
 }

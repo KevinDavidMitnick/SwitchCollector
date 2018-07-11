@@ -1,7 +1,7 @@
 {
     "class" : "H3C",
     "type" :  "H3C_S5560-54C-EI",
-    "metric" : {
+    "metrics" : {
         "cpu使用率(%)"  : {
             "oid" : ".1.1.1.1..1.1.1.1.1",
             "interval" : 10
@@ -19,7 +19,7 @@
             "interval" : 10
         }
     },
-    "info" : {
+    "infos" : {
         "系统名称" : {
             "oid" : ".1.1.11.1..11.1.13",
             "interval" : 10
@@ -29,7 +29,7 @@
             "interval" : 10
         }
     },
-    "multimetric":{
+    "multimetrics":{
         "上行端口速率(kbps)" : {
             "oid" : ".1.1.1.1.1.1.1.13",
             "interval" : 10
@@ -39,7 +39,7 @@
             "interval" : 10
         }
     },
-    "multiinfo":{
+    "multiinfos":{
         "端口状态(0/1)" : {
             "oid" : ".1.1.1.1.1.1.1.13",
             "interval" : 10

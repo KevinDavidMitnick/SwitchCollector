@@ -24,6 +24,7 @@ func init() {
 }
 
 func main() {
+	service.Init()
 	go service.CollectFlow()
 	if g.Config().Http.Enabled {
 		go service.StartHttpServer()

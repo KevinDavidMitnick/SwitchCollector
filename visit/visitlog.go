@@ -89,7 +89,9 @@ func (ips *IpHistory) cleanStaleData() {
 			}
 			last--
 		}
-		ips.History[ip] = history[last:]
+		if last >= 0 {
+			ips.History[ip] = history[last:]
+		}
 	}
 
 }

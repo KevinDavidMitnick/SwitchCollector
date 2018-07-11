@@ -38,32 +38,36 @@ func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	device.Type = dev.Type
 
 	metrics := metricT.Metrics
+	if metrics == nil {
+		metrics = make(map[string]*g.Metric)
+	}
+
 	infos := metricT.Infos
+	if infos == nil {
+		infos = make(map[string]*g.Metric)
+	}
+
 	multiMetrics := metricT.MultiMetrics
+	if multiMetrics == nil {
+		multiMetrics = make(map[string]*g.Metric)
+	}
+
 	multiInfos := metricT.MultiInfos
+	if multiInfos == nil {
+		multiInfos = make(map[string]*g.Metric)
+	}
+
 	if dev.Extension.Enabled {
 		for key, value := range dev.Extension.Metrics {
-			if metrics == nil {
-				metrics = make(map[string]*g.Metric)
-			}
 			metrics[key] = value
 		}
 		for key, value := range dev.Extension.Infos {
-			if infos == nil {
-				infos = make(map[string]*g.Metric)
-			}
 			infos[key] = value
 		}
 		for key, value := range dev.Extension.MultiMetrics {
-			if multiMetrics == nil {
-				multiMetrics = make(map[string]*g.Metric)
-			}
 			multiMetrics[key] = value
 		}
 		for key, value := range dev.Extension.MultiInfos {
-			if multiInfos == nil {
-				multiInfos = make(map[string]*g.Metric)
-			}
 			multiInfos[key] = value
 		}
 	}

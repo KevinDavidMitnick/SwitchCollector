@@ -12,17 +12,17 @@ type Object interface {
 
 //Scheduler struct ,scheduler queue
 type Scheduler struct {
-	Queue map[int64][]interface{} `json:"queue"`
+	Queue map[int64][]Object `json:"queue"`
 }
 
 //runScheduler ,run scheduler after interval
-func (scheduler *Scheduler) run(interval int64, tasks []interface{}) {
+func (scheduler *Scheduler) run(interval int64, tasks []Object) {
 	for {
 		timer := time.NewTicker(time.Second * time.Duration(interval))
 		select {
 		case <-timer.C:
 			for _, obj := range tasks {
-				go obj.(Object).Run()
+				go obj.Run()
 			}
 		case <-time.After(time.Second * time.Duration(interval*2)):
 			fmt.Println("timeout for scheduler...")
@@ -37,9 +37,9 @@ func (scheduler *Scheduler) Scheduler() {
 	}
 }
 
-//CreateScheduler
+//GetScheduler, get scheduler
 func GetScheduler() *Scheduler {
 	var scheduler Scheduler
-	scheduler.Queue = make(map[int64][]interface{})
+	scheduler.Queue = make(map[int64][]Object)
 	return &scheduler
 }

@@ -140,7 +140,7 @@ func (device *Device) InitScheduler() {
 				executer.Timeout = metricDevice.Timeout
 				executer.Name = name
 
-				device.scheduler.Queue[executer.Interval] = append(device.scheduler.Queue[executer.Interval], executer)
+				device.scheduler.Queue[executer.Interval] = append(device.scheduler.Queue[executer.Interval], &executer)
 			}
 		}
 	}

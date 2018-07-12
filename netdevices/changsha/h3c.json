@@ -6,7 +6,7 @@
    "class" : "H3C",
    "type"  : "H3C_S5560-54C-EI",
    "extension" : {
-       "enable" : true,
+       "enabled" : true,
        "metrics" : {
        },
        "infos" : {

@@ -7,7 +7,7 @@ import (
 
 //Object interface ,scheduler run
 type Object interface {
-	Run()
+	Run(timestamp int64)
 }
 
 //Scheduler struct ,scheduler queue
@@ -21,8 +21,9 @@ func (scheduler *Scheduler) run(interval int64, tasks []Object) {
 		timer := time.NewTicker(time.Second * time.Duration(interval))
 		select {
 		case <-timer.C:
+			timestamp := time.Now().Unix()
 			for _, obj := range tasks {
-				go obj.Run()
+				go obj.Run(timestamp)
 			}
 		case <-time.After(time.Second * time.Duration(interval*2)):
 			fmt.Println("timeout for scheduler...")

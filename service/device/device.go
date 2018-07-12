@@ -29,20 +29,73 @@ type Device struct {
 
 type Executer struct {
 	scheduler.Object
-	Ip        string `json:"ip"`
-	Community string `json:"community"`
-	Port      int    `json:"port"`
-	Version   string `json:"version"`
-	Oid       string `json:"oid"`
-	Interval  int64  `json:"interval"`
-	DataType  string `json:"datatype"`
-	Timeout   int    `json:"timeout"`
-	Name      string `json:"name"`
+	Ip         string `json:"ip"`
+	Community  string `json:"community"`
+	Port       int    `json:"port"`
+	Version    string `json:"version"`
+	Oid        string `json:"oid"`
+	Interval   int64  `json:"interval"`
+	DataType   string `json:"datatype"`
+	Timeout    int    `json:"timeout"`
+	Name       string `json:"name"`
+	MetricType string `json:"metrictype"`
+	Timestamp  int64  `json:"timestamp"`
 }
 
-func (e *Executer) Run() {
-	fmt.Println("run:", e.Ip, e.Oid)
+func pingCheck() int64 {
+	return 1
+}
 
+func pingLatency() int64 {
+	return 100
+}
+
+func (e *Executer) PingCheck() {
+	fmt.Println("ping check:", e.Ip, e.Oid, e.Name)
+	gData := g.GetGlobalData()
+	value := pingCheck()
+	if gData.Metrics[e.Ip][e.Name] == nil {
+		gData.Metrics[e.Ip][e.Name] = new(g.MetricData)
+	} else {
+		gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
+		if gData.Metrics[e.Ip][e.Name].Data == nil {
+			gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
+		}
+		dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
+		gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
+	}
+}
+
+func (e *Executer) PingLatency() {
+	fmt.Println("ping latency:", e.Ip, e.Oid, e.Name)
+	gData := g.GetGlobalData()
+	value := pingLatency()
+	if gData.Metrics[e.Ip][e.Name] == nil {
+		gData.Metrics[e.Ip][e.Name] = new(g.MetricData)
+	} else {
+		gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
+		if gData.Metrics[e.Ip][e.Name].Data == nil {
+			gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
+		}
+		dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
+		gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
+	}
+}
+
+func (e *Executer) CollectData() {
+	fmt.Println("collect data:", e.Ip, e.Oid, e.Name)
+}
+
+func (e *Executer) Run(timestamp int64) {
+	e.Timestamp = timestamp
+	switch e.Oid {
+	case "ping_check":
+		e.PingCheck()
+	case "ping_latency()":
+		e.PingLatency()
+	default:
+		e.CollectData()
+	}
 }
 
 func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
@@ -122,9 +175,9 @@ func (device *Device) Update() {
 
 func (device *Device) InitScheduler() {
 	for _, metricDevice := range device.tasks {
-		metricsL := []map[string]*g.Metric{metricDevice.Metrics,
-			metricDevice.Infos, metricDevice.MultiMetrics, metricDevice.MultiInfos}
-		for _, metrics := range metricsL {
+		metricsL := map[string]map[string]*g.Metric{"metrics": metricDevice.Metrics,
+			"infos": metricDevice.Infos, "multimetrics": metricDevice.MultiMetrics, "multiinfos": metricDevice.MultiInfos}
+		for metricType, metrics := range metricsL {
 			for name, metric := range metrics {
 				var executer Executer
 				executer.Ip = metricDevice.Ip
@@ -139,6 +192,7 @@ func (device *Device) InitScheduler() {
 				executer.DataType = metric.DataType
 				executer.Timeout = metricDevice.Timeout
 				executer.Name = name
+				executer.MetricType = metricType
 
 				device.scheduler.Queue[executer.Interval] = append(device.scheduler.Queue[executer.Interval], &executer)
 			}

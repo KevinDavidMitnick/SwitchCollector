@@ -4,49 +4,59 @@
     "metrics" : {
         "cpu使用率(%)"  : {
             "oid" : ".1.1.1.1..1.1.1.1.1",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         },
         "内存使用率(%)" : {
             "oid" : ".1.1.1.1.1.1.1.1.2",
-            "interval": 10
+            "interval": 10,
+            "datatype": "GAUGE"
         },
         "ping检测(0/1)": {
             "oid" : ".1.1.1.1.1.1.1.1.1.15",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         },
         "ping延时(ms)"  : {
             "oid" : ".1.1.1.1.1.1.1.1.1.16",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         }
     },
     "infos" : {
         "系统名称" : {
             "oid" : ".1.1.11.1..11.1.13",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         },
         "系统描述" : {
             "oid" : ".1.1.1.1.1.1.11.17",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         }
     },
     "multimetrics":{
         "上行端口速率(kbps)" : {
             "oid" : ".1.1.1.1.1.1.1.13",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "COUNTER"
         },
         "下行端口速率(kbps)" : {
             "oid" : ".1.1.1.1.1.1.1.14",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "COUNTER"
         }
     },
     "multiinfos":{
         "端口状态(0/1)" : {
             "oid" : ".1.1.1.1.1.1.1.13",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         },
         "端口描述" : {
             "oid" : ".1.1.1.1.1.1.1.13",
-            "interval" : 10
+            "interval" : 10,
+            "datatype": "GAUGE"
         }
     },
    "timeout": 1000,

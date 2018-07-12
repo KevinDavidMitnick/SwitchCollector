@@ -48,8 +48,8 @@ func Search(expire int64) *FlowQuantity {
 	var flowQuantity FlowQuantity
 	flowQuantity = FlowQuantity{Data: make([]*Flow, 0)}
 
-	inData := rrdtool.FetchFromFile(inFile, cf, startTime, endTime, step)
-	outData := rrdtool.FetchFromFile(outFile, cf, startTime, endTime, step)
+	inData := rrdtool.FetchFromFile(inFile, cf, startTime, endTime, int(step))
+	outData := rrdtool.FetchFromFile(outFile, cf, startTime, endTime, int(step))
 
 	if inData == nil || outData == nil {
 		return &flowQuantity
@@ -126,7 +126,7 @@ func getFlow(ip string, community string, oid string, timeout int) (uint64, erro
 
 func collectAndFlushFlow(ip string, community string, oid string, timeout int, timestamp int64, filename string) {
 	if flow, err := getFlow(ip, community, oid, timeout); err == nil {
-		item := []*rrdtool.Item{&rrdtool.Item{DsType: "COUNTER", Step: g.Config().Interval, Timestamp: timestamp, Value: float64(flow)}}
+		item := []*rrdtool.Item{&rrdtool.Item{DsType: "COUNTER", Step: int(g.Config().Interval), Timestamp: timestamp, Value: float64(flow)}}
 		rrdtool.FlushrrdToFile(filename, item)
 	}
 }

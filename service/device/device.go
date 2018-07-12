@@ -3,6 +3,8 @@ package device
 //Device interface, for example switch,firewall
 
 import (
+	"fmt"
+	"github.com/SwitchCollector/core/scheduler"
 	"github.com/SwitchCollector/g"
 )
 
@@ -18,15 +20,30 @@ type MetricDevice struct {
 	MultiMetrics map[string]*g.Metric `json:"multimetrics"`
 	MultiInfos   map[string]*g.Metric `json:"multiinfos"`
 	Timeout      int                  `json:"timeout"`
-	Interval     int                  `json:"interval"`
+	Interval     int64                `json:"interval"`
 }
-type Devices struct {
-	task []*MetricDevice `json:"task"`
+type Device struct {
+	tasks     []*MetricDevice      `json:"tasks"`
+	scheduler *scheduler.Scheduler `json:"scheduler"`
 }
 
-var (
-	devices Devices
-)
+type Executer struct {
+	scheduler.Object
+	Ip        string `json:"ip"`
+	Community string `json:"community"`
+	Port      int    `json:"port"`
+	Version   string `json:"version"`
+	Oid       string `json:"oid"`
+	Interval  int64  `json:"interval"`
+	DataType  string `json:"datatype"`
+	Timeout   int    `json:"timeout"`
+	Name      string `json:"name"`
+}
+
+func (e *Executer) Run() {
+	fmt.Println("run:", e.Ip, e.Oid)
+
+}
 
 func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	var device MetricDevice
@@ -80,31 +97,64 @@ func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	return &device
 }
 
-func Init() {
-	if devices.task == nil {
-		devices.task = make([]*MetricDevice, 0)
+func GetDevice() *Device {
+	var device Device
+	if device.tasks == nil {
+		device.tasks = make([]*MetricDevice, 0)
 	}
+	device.scheduler = scheduler.GetScheduler()
+	return &device
+}
+
+func (device *Device) InitTasks() {
 	metricM := g.MetricT()
 	netDevs := g.NetDevs()
 	for ip := range netDevs {
 		dev := netDevs[ip]
-		device := mergeMetrics(dev, metricM[dev.Type])
-		devices.task = append(devices.task, device)
+		metricDevice := mergeMetrics(dev, metricM[dev.Type])
+		device.tasks = append(device.tasks, metricDevice)
 	}
 }
 
-func (d *Devices) Update() {
+func (device *Device) Update() {
 
 }
 
-func (d *Devices) Collect() {
+func (device *Device) InitScheduler() {
+	for _, metricDevice := range device.tasks {
+		metricsL := []map[string]*g.Metric{metricDevice.Metrics,
+			metricDevice.Infos, metricDevice.MultiMetrics, metricDevice.MultiInfos}
+		for _, metrics := range metricsL {
+			for name, metric := range metrics {
+				var executer Executer
+				executer.Ip = metricDevice.Ip
+				executer.Community = metricDevice.Community
+				executer.Port = metricDevice.Port
+				executer.Version = metricDevice.Version
+				executer.Interval = metricDevice.Interval
+				executer.Oid = metric.Oid
+				if metric.Interval > 0 {
+					executer.Interval = metric.Interval
+				}
+				executer.DataType = metric.DataType
+				executer.Timeout = metricDevice.Timeout
+				executer.Name = name
+
+				device.scheduler.Queue[executer.Interval] = append(device.scheduler.Queue[executer.Interval], executer)
+			}
+		}
+	}
+}
+
+func (device *Device) Collect() {
+	device.scheduler.Scheduler()
+	select {}
+}
+
+func (device *Device) Flush() {
 
 }
 
-func (d *Devices) Flush() {
-
-}
-
-func (d *Devices) CleanStale() {
+func (device *Device) CleanStale() {
 
 }

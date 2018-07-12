@@ -33,12 +33,13 @@ type GlobalConfig struct {
 	Templates  *TemplatesConfig  `json:"templates"`
 	NetDevices *NetDevicesConfig `json:"netdevices"`
 	Expire     int               `json:"expire"`
-	Interval   int               `json:"interval"`
+	Interval   int64             `json:"interval"`
 }
 
 type Metric struct {
 	Oid      string `json:"oid"`
-	Interval int    `json:"interval"`
+	Interval int64  `json:"interval"`
+	DataType string `json:"datatype"`
 }
 
 type MetricTemplate struct {
@@ -49,7 +50,7 @@ type MetricTemplate struct {
 	MultiMetrics map[string]*Metric `json:"multimetrics"`
 	MultiInfos   map[string]*Metric `json:"multiinfos"`
 	Timeout      int                `json:"timeout"`
-	Interval     int                `json:"interval"`
+	Interval     int64              `json:"interval"`
 }
 
 type Extension struct {

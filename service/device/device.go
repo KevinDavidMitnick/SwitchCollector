@@ -46,7 +46,7 @@ type Executer struct {
 func (e *Executer) PingCheck() {
 	fmt.Println("ping check:", e.Ip, e.Oid, e.Name, e.Timestamp)
 	gData := g.GetGlobalData()
-	value, _ := funcs.Ping(e.Ip, e.Timeout*1000, true)
+	value, _ := funcs.Ping(e.Ip, e.Timeout)
 	if gData.Metrics[e.Ip] == nil {
 		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
 	}
@@ -66,7 +66,7 @@ func (e *Executer) PingLatency() {
 	fmt.Println("ping latency:", e.Ip, e.Oid, e.Name, e.Timestamp)
 
 	gData := g.GetGlobalData()
-	_, value := funcs.Ping(e.Ip, e.Timeout*1000, true)
+	_, value := funcs.Ping(e.Ip, e.Timeout)
 	if gData.Metrics[e.Ip] == nil {
 		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
 	}

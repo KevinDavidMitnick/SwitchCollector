@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/SwitchCollector/core/scheduler"
 	"github.com/SwitchCollector/g"
+	"github.com/SwitchCollector/service/funcs"
 )
 
 type MetricDevice struct {
@@ -42,18 +43,10 @@ type Executer struct {
 	Timestamp  int64  `json:"timestamp"`
 }
 
-func pingCheck() int64 {
-	return 1
-}
-
-func pingLatency() int64 {
-	return 100
-}
-
 func (e *Executer) PingCheck() {
 	fmt.Println("ping check:", e.Ip, e.Oid, e.Name, e.Timestamp)
 	gData := g.GetGlobalData()
-	value := pingCheck()
+	value, _ := funcs.Ping(e.Ip, e.Timeout*1000, true)
 	if gData.Metrics[e.Ip] == nil {
 		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
 	}
@@ -66,13 +59,14 @@ func (e *Executer) PingCheck() {
 	}
 	dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
 	gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
+	fmt.Println("check is:", gData.Metrics[e.Ip][e.Name].Data["liucong"][0].Value.(int64))
 }
 
 func (e *Executer) PingLatency() {
 	fmt.Println("ping latency:", e.Ip, e.Oid, e.Name, e.Timestamp)
 
 	gData := g.GetGlobalData()
-	value := pingLatency()
+	_, value := funcs.Ping(e.Ip, e.Timeout*1000, true)
 	if gData.Metrics[e.Ip] == nil {
 		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
 	}
@@ -85,6 +79,7 @@ func (e *Executer) PingLatency() {
 	}
 	dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
 	gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
+	fmt.Println("latency is:", gData.Metrics[e.Ip][e.Name].Data["liucong"][0].Value.(int64))
 }
 
 func (e *Executer) CollectData() {
@@ -96,7 +91,7 @@ func (e *Executer) Run(timestamp int64) {
 	switch e.Oid {
 	case "ping_check":
 		e.PingCheck()
-	case "ping_latency()":
+	case "ping_latency":
 		e.PingLatency()
 	default:
 		e.CollectData()

@@ -47,5 +47,5 @@ func Ping(ip string, timeout int) (int64, int64) {
 		}
 	}
 
-	return 0, int64(rrt / 2)
+	return 1, int64(rrt / 2)
 }

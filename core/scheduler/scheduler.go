@@ -22,6 +22,7 @@ func (scheduler *Scheduler) run(interval int64, tasks []Object) {
 		select {
 		case <-timer.C:
 			timestamp := time.Now().Unix()
+			fmt.Println("\n begin run:----------------------->")
 			for _, obj := range tasks {
 				go obj.Run(timestamp)
 			}

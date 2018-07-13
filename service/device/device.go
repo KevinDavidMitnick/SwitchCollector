@@ -51,39 +51,44 @@ func pingLatency() int64 {
 }
 
 func (e *Executer) PingCheck() {
-	fmt.Println("ping check:", e.Ip, e.Oid, e.Name)
+	fmt.Println("ping check:", e.Ip, e.Oid, e.Name, e.Timestamp)
 	gData := g.GetGlobalData()
 	value := pingCheck()
+	if gData.Metrics[e.Ip] == nil {
+		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
+	}
 	if gData.Metrics[e.Ip][e.Name] == nil {
 		gData.Metrics[e.Ip][e.Name] = new(g.MetricData)
-	} else {
-		gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
-		if gData.Metrics[e.Ip][e.Name].Data == nil {
-			gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
-		}
-		dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
-		gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
 	}
+	gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
+	if gData.Metrics[e.Ip][e.Name].Data == nil {
+		gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
+	}
+	dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
+	gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
 }
 
 func (e *Executer) PingLatency() {
-	fmt.Println("ping latency:", e.Ip, e.Oid, e.Name)
+	fmt.Println("ping latency:", e.Ip, e.Oid, e.Name, e.Timestamp)
+
 	gData := g.GetGlobalData()
 	value := pingLatency()
+	if gData.Metrics[e.Ip] == nil {
+		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
+	}
 	if gData.Metrics[e.Ip][e.Name] == nil {
 		gData.Metrics[e.Ip][e.Name] = new(g.MetricData)
-	} else {
-		gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
-		if gData.Metrics[e.Ip][e.Name].Data == nil {
-			gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
-		}
-		dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
-		gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
 	}
+	gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
+	if gData.Metrics[e.Ip][e.Name].Data == nil {
+		gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
+	}
+	dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
+	gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
 }
 
 func (e *Executer) CollectData() {
-	fmt.Println("collect data:", e.Ip, e.Oid, e.Name)
+	fmt.Println("collect data:", e.Ip, e.Oid, e.Name, e.Timestamp)
 }
 
 func (e *Executer) Run(timestamp int64) {

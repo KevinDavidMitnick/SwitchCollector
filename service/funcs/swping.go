@@ -22,7 +22,7 @@ func Ping(ip string, timeout int) (int64, int64) {
 	if err := cmd.Start(); err != nil {
 		return 0, 0
 	}
-	err, isTimeout := sys.CmdRunWithTimeout(cmd, time.Duration(timeout)*time.Millisecond)
+	err, isTimeout := sys.CmdRunWithTimeout(cmd, time.Duration(timeout)*time.Second)
 	if isTimeout || err != nil {
 		return 0, 0
 	}

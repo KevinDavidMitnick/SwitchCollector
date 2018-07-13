@@ -64,6 +64,6 @@
             "datatype": "GAUGE"
         }
     },
-   "timeout": 1000,
+   "timeout": 5,
    "interval": 10
 }

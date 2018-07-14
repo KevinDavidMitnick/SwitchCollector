@@ -36,7 +36,7 @@ func (querier *QueryExecuter) Close() {
 
 func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 	oids := []string{oid}
-	result, err := querier.Interal.Get(oids)
+	result, err := querier.Interal.GetNext(oids)
 	if err != nil {
 		log.Println("Get oid value failed, err is: ", err, "oid is:", oid)
 		return nil, err

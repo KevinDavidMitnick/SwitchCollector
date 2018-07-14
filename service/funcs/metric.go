@@ -5,6 +5,7 @@ import (
 	_ "fmt"
 	"github.com/soniah/gosnmp"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -35,15 +36,28 @@ func (querier *QueryExecuter) Close() {
 }
 
 func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
-	oids := []string{oid}
-	result, err := querier.Interal.GetNext(oids)
-	if err != nil {
-		log.Println("Get oid value failed, err is: ", err, "oid is:", oid)
-		return nil, err
-	}
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(" Recovered in GetMetricValue", r, "oid is:", oid)
+		}
+	}()
 
-	for _, variable := range result.Variables {
-		return variable.Value, nil
+	oids := []string{oid}
+
+	for {
+		result, err := querier.Interal.GetNext(oids)
+		if err != nil {
+			log.Println("Get oid value failed, err is: ", err, "oid is:", oid)
+			break
+		}
+
+		data := result.Variables[0]
+		if !strings.Contains(data.Name, oid) {
+			break
+		}
+		if data.Value != nil {
+			return data.Value, nil
+		}
 	}
 	return nil, errors.New("Empty metric value for " + oid)
 }

@@ -84,6 +84,19 @@ func (e *Executer) PingLatency() {
 
 func (e *Executer) CollectData() {
 	fmt.Println("collect data:", e.Ip, e.Oid, e.Name, e.Timestamp)
+
+	querier := funcs.GetQuerier(e.Ip, e.Port, e.Community, e.Version, e.Timeout)
+	defer querier.Close()
+
+	switch e.MetricType {
+	case "metrics", "infos":
+		querier.GetMetricValue(e.Oid)
+	//case "multimetrics", "multiinfos":
+	//value, err := querier.GetBulkMetricValue(e.Oid)
+	//fmt.Println("get bulk metric,info,oid is :%s, value is %v, err is : %v", e.Oid, value, err)
+	default:
+		fmt.Println("should not be here,collect data...")
+	}
 }
 
 func (e *Executer) Run(timestamp int64) {

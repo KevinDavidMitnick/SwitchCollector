@@ -2,7 +2,6 @@ package funcs
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/toolkits/sys"
 	"os/exec"
 	"strconv"
@@ -31,8 +30,6 @@ func Ping(ip string, timeout int) (int64, int64) {
 	if len(data) == 0 {
 		return 0, 0
 	}
-
-	fmt.Println(string(data))
 
 	var rrt float64
 	rrts := strings.Fields(string(data))

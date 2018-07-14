@@ -2,9 +2,10 @@ package funcs
 
 import (
 	"errors"
-	_ "fmt"
+	"fmt"
 	"github.com/soniah/gosnmp"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -55,11 +56,17 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 		if !strings.Contains(data.Name, oid) {
 			break
 		}
-		if data.Value != nil {
+		switch data.Type {
+		case gosnmp.OctetString:
 			return data.Value, nil
+		default:
+			ret := fmt.Sprintf("%d", gosnmp.ToBigInt(data.Value))
+			if i, err := strconv.ParseInt(ret, 10, 64); err == nil && i != 0 {
+				return i, nil
+			}
 		}
 	}
-	return nil, errors.New("Empty metric value for " + oid)
+	return int64(0), nil
 }
 
 func (querier *QueryExecuter) GetBulkMetricValue(oid string) (interface{}, error) {

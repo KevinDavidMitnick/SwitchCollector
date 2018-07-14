@@ -1,7 +1,7 @@
 {
    "ip" : "10.21.1.200",
    "community": "Huayun123",
-   "port": 22,
+   "port": 161,
    "version": "v2",
    "class" : "HUAWEI",
    "type"  : "HUAWEI_CE6810-24S2Q-LI",

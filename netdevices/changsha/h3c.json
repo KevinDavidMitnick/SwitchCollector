@@ -1,7 +1,7 @@
 {
    "ip" : "10.0.20.254",
    "community": "huayun.2017",
-   "port" : 22,
+   "port" : 161,
    "verssion": "v2",
    "class" : "H3C",
    "type"  : "H3C_S5560-54C-EI",

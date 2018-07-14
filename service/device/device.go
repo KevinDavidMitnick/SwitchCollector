@@ -90,10 +90,11 @@ func (e *Executer) CollectData() {
 
 	switch e.MetricType {
 	case "metrics", "infos":
-		querier.GetMetricValue(e.Oid)
-	//case "multimetrics", "multiinfos":
-	//value, err := querier.GetBulkMetricValue(e.Oid)
-	//fmt.Println("get bulk metric,info,oid is :%s, value is %v, err is : %v", e.Oid, value, err)
+		value, err := querier.GetMetricValue(e.Oid)
+		fmt.Println("get metric,", e.Oid, value, err)
+	case "multimetrics", "multiinfos":
+		value, err := querier.GetBulkMetricValue(e.Oid)
+		fmt.Println("get bulk metric,", e.Oid, value, err)
 	default:
 		fmt.Println("should not be here,collect data...")
 	}

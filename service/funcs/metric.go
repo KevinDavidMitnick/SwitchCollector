@@ -2,7 +2,7 @@ package funcs
 
 import (
 	"errors"
-	"fmt"
+	_ "fmt"
 	"github.com/soniah/gosnmp"
 	"log"
 	"time"
@@ -42,8 +42,7 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 		return nil, err
 	}
 
-	for i, variable := range result.Variables {
-		fmt.Printf("getmetricvalue ,%d: oid: %s", i, variable.Name)
+	for _, variable := range result.Variables {
 		return variable.Value, nil
 	}
 	return nil, errors.New("Empty metric value for " + oid)
@@ -52,12 +51,11 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 func (querier *QueryExecuter) GetBulkMetricValue(oid string) (interface{}, error) {
 	results, err := querier.Interal.BulkWalkAll(oid)
 	if err != nil {
-		log.Println(" builk oid value failed, err is ", err)
+		log.Println(" builk oid value failed, err is ", err, "oid is:", oid)
 		return nil, err
 	}
 
-	for i, variable := range results {
-		fmt.Printf("buld metric value ,%d: oid: %s ", i, variable.Name)
+	for _, variable := range results {
 		return variable.Value, nil
 	}
 	return nil, errors.New("Empty bulk metric value for " + oid)

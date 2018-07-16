@@ -1,6 +1,9 @@
 package g
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type DataValue struct {
 	LastValue interface{} `json:"lastvalue"`
@@ -18,7 +21,8 @@ type DeviceData struct {
 }
 
 type DeviceList struct {
-	Data []string `json:"Data"`
+	Data           []string `json:"Data"`
+	StatisticsTime int64    `json:"StatisticsTime"`
 }
 
 var (
@@ -54,5 +58,6 @@ func GetDeviceList() *DeviceList {
 	for ip := range indexNameMap {
 		ret.Data = append(ret.Data, ip)
 	}
+	ret.StatisticsTime = time.Now().Unix()
 	return &ret
 }

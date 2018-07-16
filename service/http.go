@@ -62,8 +62,24 @@ func GetDeviceList(w http.ResponseWriter, r *http.Request) {
 	w.Write(ret)
 }
 
+func GetDeviceInfo(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "parse data error", http.StatusBadRequest)
+		return
+	}
+	ip := strings.TrimSpace(r.Form.Get("ip"))
+	deviceInfo := g.GetDeviceInfo(ip)
+	ret, err := json.Marshal(deviceInfo)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Write(ret)
+}
+
 func StartHttpServer() {
 	log.Println("starting http server....")
-	http.HandleFunc("/netdevice/devicelist", GetDeviceList)
+	http.HandleFunc("/GetDeviceList", GetDeviceList)
+	http.HandleFunc("/GetDeviceInfo", GetDeviceInfo)
 	http.ListenAndServe(g.Config().Http.Addr, nil)
 }

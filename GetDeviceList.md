@@ -13,11 +13,6 @@ GET /GetDeviceList HTTP/1.1
 |Data|Array|返回网络设备名称，IP地址         |非空|
 |StatisticsTime|Integer|统计时间点，单位：秒 |非空|
 
-#### DeviceList
-|名称|类型|描述|是否非空|
-| ------------- |:-------------: |:-------------:| ------------- |
-|IP|String|IP地址|非空|
-
 #### 请求示例
 
 ##### Request

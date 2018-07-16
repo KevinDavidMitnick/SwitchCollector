@@ -30,6 +30,11 @@ type DeviceInfo struct {
 	StatisticsTime int64                    `json:"StatisticsTime"`
 }
 
+type InterfaceInfo struct {
+	Data           map[string]map[string]interface{} `json:"Data"`
+	StatisticsTime int64                             `json:"StatisticsTime"`
+}
+
 var (
 	locker       sync.RWMutex
 	globalData   DeviceData
@@ -70,13 +75,32 @@ func GetDeviceList() *DeviceList {
 func GetDeviceInfo(ip string) *DeviceInfo {
 	var ret DeviceInfo
 	ret.Data = make([]map[string]interface{}, 0)
-	for name, metricData := range globalData.Metrics[ip] {
+	for metricName, metricData := range globalData.Metrics[ip] {
 		info := make(map[string]interface{})
 		if metricData.MetricType == "infos" || metricData.MetricType == "metrics" {
-			info[name] = metricData.Data["liucong"][0].Value
+			info[metricName] = metricData.Data["liucong"][0].Value
 			ret.Data = append(ret.Data, info)
 		}
 	}
+	ret.StatisticsTime = time.Now().Unix()
+	return &ret
+}
+
+func GetInterfaceInfo(ip string) *InterfaceInfo {
+	var ret InterfaceInfo
+	ret.Data = make(map[string]map[string]interface{})
+	for metricName, metricData := range globalData.Metrics[ip] {
+		if metricData.MetricType == "multiinfos" {
+			for interfaceName, values := range metricData.Data {
+				if ret.Data[interfaceName] == nil {
+					ret.Data[interfaceName] = make(map[string]interface{})
+				}
+				length := len(values)
+				ret.Data[interfaceName][metricName] = values[length-1].Value
+			}
+		}
+	}
+
 	ret.StatisticsTime = time.Now().Unix()
 	return &ret
 }

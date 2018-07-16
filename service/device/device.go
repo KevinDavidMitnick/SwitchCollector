@@ -83,12 +83,12 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 			if dataType == "GAUGE" {
 				for k, v := range value.(map[string]interface{}) {
 					dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
-					gData.Metrics[ip][name].Data[indexNameMap[k]] = []*g.DataValue{&dataValue}
+					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = []*g.DataValue{&dataValue}
 				}
 			} else {
 				for k, v := range value.(map[string]interface{}) {
 					dataValue := g.DataValue{LastValue: v, Value: int64(0), Timestamp: timestamp}
-					gData.Metrics[ip][name].Data[indexNameMap[k]] = []*g.DataValue{&dataValue}
+					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = []*g.DataValue{&dataValue}
 				}
 			}
 		}
@@ -108,14 +108,14 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 			if dataType == "GAUGE" {
 				for k, v := range value.(map[string]interface{}) {
 					dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
-					gData.Metrics[ip][name].Data[indexNameMap[k]] = append(gData.Metrics[ip][name].Data[indexNameMap[k]], &dataValue)
+					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = append(gData.Metrics[ip][name].Data[indexNameMap[ip][k]], &dataValue)
 				}
 			} else {
 				for k, v := range value.(map[string]interface{}) {
-					len := len(gData.Metrics[ip][name].Data[indexNameMap[k]])
-					curvalue := (v.(int64) - gData.Metrics[ip][name].Data[indexNameMap[k]][len-1].LastValue.(int64)) / interval
+					len := len(gData.Metrics[ip][name].Data[indexNameMap[ip][k]])
+					curvalue := (v.(int64) - gData.Metrics[ip][name].Data[indexNameMap[ip][k]][len-1].LastValue.(int64)) / interval
 					dataValue := g.DataValue{LastValue: v, Value: curvalue, Timestamp: timestamp}
-					gData.Metrics[ip][name].Data[indexNameMap[k]] = append(gData.Metrics[ip][name].Data[indexNameMap[k]], &dataValue)
+					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = append(gData.Metrics[ip][name].Data[indexNameMap[ip][k]], &dataValue)
 				}
 			}
 		}
@@ -213,8 +213,8 @@ func GetDevice() *Device {
 
 func buildIndexNameMap(ip string, port int, community string, version string, timeout int) {
 	indexNameMap := g.GetIndexNameMap()
-	if len(indexNameMap) != 0 {
-		return
+	if indexNameMap[ip] == nil {
+		indexNameMap[ip] = make(map[string]string)
 	}
 	querier := funcs.GetQuerier(ip, port, community, version, timeout)
 	defer querier.Close()
@@ -223,7 +223,7 @@ func buildIndexNameMap(ip string, port int, community string, version string, ti
 		fmt.Println(err.Error())
 	}
 	for key, value := range tempMap {
-		indexNameMap[key] = value.(string)
+		indexNameMap[ip][key] = value.(string)
 	}
 	fmt.Println("map is:", indexNameMap)
 }

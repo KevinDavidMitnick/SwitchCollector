@@ -17,10 +17,14 @@ type DeviceData struct {
 	Metrics map[string]map[string]*MetricData `json:"metrics"`
 }
 
+type DeviceList struct {
+	Data []string `json:"Data"`
+}
+
 var (
 	locker       sync.RWMutex
 	globalData   DeviceData
-	indexNameMap map[string]string
+	indexNameMap map[string]map[string]string
 )
 
 func GetGlobalData() *DeviceData {
@@ -33,13 +37,22 @@ func GetGlobalData() *DeviceData {
 	return &globalData
 }
 
-func GetIndexNameMap() map[string]string {
+func GetIndexNameMap() map[string]map[string]string {
 	locker.Lock()
 	defer locker.Unlock()
 
 	if indexNameMap == nil {
-		indexNameMap = make(map[string]string)
+		indexNameMap = make(map[string]map[string]string)
 	}
 
 	return indexNameMap
+}
+
+func GetDeviceList() *DeviceList {
+	var ret DeviceList
+	ret.Data = make([]string, 0)
+	for ip := range indexNameMap {
+		ret.Data = append(ret.Data, ip)
+	}
+	return &ret
 }

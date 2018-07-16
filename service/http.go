@@ -52,9 +52,22 @@ func VisitLog(w http.ResponseWriter, r *http.Request) {
 	w.Write(ret)
 }
 
+func GetDeviceList(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "parse data error", http.StatusBadRequest)
+		return
+	}
+	deviceList := g.GetDeviceList()
+	ret, err := json.Marshal(deviceList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Write(ret)
+}
+
 func StartHttpServer() {
 	log.Println("starting http server....")
-	http.HandleFunc("/FlowQuantityBytes", FlowQuantityBytes)
-	http.HandleFunc("/VisitLog", VisitLog)
+	http.HandleFunc("/netdevice/devicelist", GetDeviceList)
 	http.ListenAndServe(g.Config().Http.Addr, nil)
 }

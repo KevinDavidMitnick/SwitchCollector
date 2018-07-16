@@ -44,17 +44,13 @@ type Executer struct {
 }
 
 func (e *Executer) PingCheck() {
-	gData := g.GetGlobalData()
 	value, _ := funcs.Ping(e.Ip, e.Timeout)
 	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
-	//fmt.Println("check is:", gData.Metrics[e.Ip][e.Name].Data["liucong"][0].Value.(int64))
 }
 
 func (e *Executer) PingLatency() {
-	gData := g.GetGlobalData()
 	_, value := funcs.Ping(e.Ip, e.Timeout)
 	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
-	//fmt.Println("latency is:", gData.Metrics[e.Ip][e.Name].Data["liucong"][0].Value.(int64))
 }
 
 func saveToGD(ip string, name string, timeout int, metricType string, dataType string, timestamp int64, interval int64, value interface{}) {

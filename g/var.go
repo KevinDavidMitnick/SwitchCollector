@@ -70,7 +70,7 @@ func GetDeviceList() *DeviceList {
 func GetDeviceInfo(ip string) *DeviceInfo {
 	var ret DeviceInfo
 	ret.Data = make([]map[string]interface{}, 0)
-	for name, metricData := range globalData.Metrics["ip"] {
+	for name, metricData := range globalData.Metrics[ip] {
 		info := make(map[string]interface{})
 		if metricData.MetricType == "infos" || metricData.MetricType == "metrics" {
 			info[name] = metricData.Data["liucong"][0].Value

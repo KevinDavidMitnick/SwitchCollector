@@ -53,10 +53,6 @@ func VisitLog(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetDeviceList(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "parse data error", http.StatusBadRequest)
-		return
-	}
 	deviceList := g.GetDeviceList()
 	ret, err := json.Marshal(deviceList)
 	if err != nil {

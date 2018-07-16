@@ -44,59 +44,97 @@ type Executer struct {
 }
 
 func (e *Executer) PingCheck() {
-	fmt.Println("ping check:", e.Ip, e.Oid, e.Name, e.Timestamp)
 	gData := g.GetGlobalData()
 	value, _ := funcs.Ping(e.Ip, e.Timeout)
-	if gData.Metrics[e.Ip] == nil {
-		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
-	}
-	if gData.Metrics[e.Ip][e.Name] == nil {
-		gData.Metrics[e.Ip][e.Name] = new(g.MetricData)
-	}
-	gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
-	if gData.Metrics[e.Ip][e.Name].Data == nil {
-		gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
-	}
-	dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
-	gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
+	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
 	fmt.Println("check is:", gData.Metrics[e.Ip][e.Name].Data["liucong"][0].Value.(int64))
 }
 
 func (e *Executer) PingLatency() {
-	fmt.Println("ping latency:", e.Ip, e.Oid, e.Name, e.Timestamp)
-
 	gData := g.GetGlobalData()
 	_, value := funcs.Ping(e.Ip, e.Timeout)
-	if gData.Metrics[e.Ip] == nil {
-		gData.Metrics[e.Ip] = make(map[string]*g.MetricData)
-	}
-	if gData.Metrics[e.Ip][e.Name] == nil {
-		gData.Metrics[e.Ip][e.Name] = new(g.MetricData)
-	}
-	gData.Metrics[e.Ip][e.Name].MetricType = e.MetricType
-	if gData.Metrics[e.Ip][e.Name].Data == nil {
-		gData.Metrics[e.Ip][e.Name].Data = make(map[string][]*g.DataValue)
-	}
-	dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: e.Timestamp}
-	gData.Metrics[e.Ip][e.Name].Data["liucong"] = []*g.DataValue{&dataValue}
+	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
 	fmt.Println("latency is:", gData.Metrics[e.Ip][e.Name].Data["liucong"][0].Value.(int64))
 }
 
-func (e *Executer) CollectData() {
-	fmt.Println("collect data:", e.Ip, e.Oid, e.Name, e.Timestamp)
+func saveToGD(ip string, name string, timeout int, metricType string, dataType string, timestamp int64, interval int64, value interface{}) {
+	gData := g.GetGlobalData()
+	indexNameMap := g.GetIndexNameMap()
 
+	if gData.Metrics[ip] == nil {
+		gData.Metrics[ip] = make(map[string]*g.MetricData)
+	}
+	if gData.Metrics[ip][name] == nil {
+		gData.Metrics[ip][name] = new(g.MetricData)
+	}
+	gData.Metrics[ip][name].MetricType = metricType
+	if gData.Metrics[ip][name].Data == nil {
+		gData.Metrics[ip][name].Data = make(map[string][]*g.DataValue)
+		switch metricType {
+		case "metrics", "infos":
+			if dataType == "GAUGE" {
+				dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: timestamp}
+				gData.Metrics[ip][name].Data["liucong"] = []*g.DataValue{&dataValue}
+			} else {
+				dataValue := g.DataValue{LastValue: value, Value: int64(0), Timestamp: timestamp}
+				gData.Metrics[ip][name].Data["liucong"] = []*g.DataValue{&dataValue}
+			}
+		case "multimetrics", "multiinfos":
+			if dataType == "GAUGE" {
+				for k, v := range value.(map[string]interface{}) {
+					dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
+					gData.Metrics[ip][name].Data[indexNameMap[k]] = []*g.DataValue{&dataValue}
+				}
+			} else {
+				for k, v := range value.(map[string]interface{}) {
+					dataValue := g.DataValue{LastValue: v, Value: int64(0), Timestamp: timestamp}
+					gData.Metrics[ip][name].Data[indexNameMap[k]] = []*g.DataValue{&dataValue}
+				}
+			}
+		}
+	} else {
+		switch metricType {
+		case "metrics", "infos":
+			if dataType == "GAUGE" {
+				dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: timestamp}
+				gData.Metrics[ip][name].Data["liucong"] = append(gData.Metrics[ip][name].Data["liucong"], &dataValue)
+			} else {
+				len := len(gData.Metrics[ip][name].Data["liucong"])
+				curvalue := (value.(int64) - gData.Metrics[ip][name].Data["liucong"][len-1].LastValue.(int64)) / interval
+				dataValue := g.DataValue{LastValue: value, Value: curvalue, Timestamp: timestamp}
+				gData.Metrics[ip][name].Data["liucong"] = append(gData.Metrics[ip][name].Data["liucong"], &dataValue)
+			}
+		case "multimetrics", "multiinfos":
+			if dataType == "GAUGE" {
+				for k, v := range value.(map[string]interface{}) {
+					dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
+					gData.Metrics[ip][name].Data[indexNameMap[k]] = append(gData.Metrics[ip][name].Data[indexNameMap[k]], &dataValue)
+				}
+			} else {
+				for k, v := range value.(map[string]interface{}) {
+					len := len(gData.Metrics[ip][name].Data[indexNameMap[k]])
+					curvalue := (v.(int64) - gData.Metrics[ip][name].Data[indexNameMap[k]][len-1].LastValue.(int64)) / interval
+					dataValue := g.DataValue{LastValue: v, Value: curvalue, Timestamp: timestamp}
+					gData.Metrics[ip][name].Data[indexNameMap[k]] = append(gData.Metrics[ip][name].Data[indexNameMap[k]], &dataValue)
+				}
+			}
+		}
+	}
+}
+
+func (e *Executer) CollectData() {
 	querier := funcs.GetQuerier(e.Ip, e.Port, e.Community, e.Version, e.Timeout)
 	defer querier.Close()
 
 	switch e.MetricType {
 	case "metrics", "infos":
-		value, err := querier.GetMetricValue(e.Oid)
-		fmt.Println("get metric,", e.Oid, value, err)
+		value, _ := querier.GetMetricValue(e.Oid)
+		saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
 	case "multimetrics", "multiinfos":
-		value, err := querier.GetBulkMetricValue(e.Oid)
-		fmt.Println("get bulk metric,", e.Oid, value, err)
+		value, _ := querier.GetBulkMetricValue(e.Oid)
+		saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
 	default:
-		fmt.Println("should not be here,collect data...")
+		fmt.Println("not right metric type:", e.MetricType)
 	}
 }
 
@@ -173,6 +211,23 @@ func GetDevice() *Device {
 	return &device
 }
 
+func buildIndexNameMap(ip string, port int, community string, version string, timeout int) {
+	indexNameMap := g.GetIndexNameMap()
+	if len(indexNameMap) != 0 {
+		return
+	}
+	querier := funcs.GetQuerier(ip, port, community, version, timeout)
+	defer querier.Close()
+	tempMap, err := querier.GetBulkMetricValue(".1.3.6.1.2.1.2.2.1.2")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for key, value := range tempMap {
+		indexNameMap[key] = value.(string)
+	}
+	fmt.Println("map is:", indexNameMap)
+}
+
 func (device *Device) InitTasks() {
 	metricM := g.MetricT()
 	netDevs := g.NetDevs()
@@ -180,6 +235,7 @@ func (device *Device) InitTasks() {
 		dev := netDevs[ip]
 		metricDevice := mergeMetrics(dev, metricM[dev.Type])
 		device.tasks = append(device.tasks, metricDevice)
+		buildIndexNameMap(ip, dev.Port, dev.Community, dev.Version, metricM[dev.Type].Timeout)
 	}
 }
 

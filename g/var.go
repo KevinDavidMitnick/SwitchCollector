@@ -18,8 +18,9 @@ type DeviceData struct {
 }
 
 var (
-	locker     sync.RWMutex
-	globalData DeviceData
+	locker       sync.RWMutex
+	globalData   DeviceData
+	indexNameMap map[string]string
 )
 
 func GetGlobalData() *DeviceData {
@@ -30,4 +31,15 @@ func GetGlobalData() *DeviceData {
 		globalData.Metrics = make(map[string]map[string]*MetricData)
 	}
 	return &globalData
+}
+
+func GetIndexNameMap() map[string]string {
+	locker.Lock()
+	defer locker.Unlock()
+
+	if indexNameMap == nil {
+		indexNameMap = make(map[string]string)
+	}
+
+	return indexNameMap
 }

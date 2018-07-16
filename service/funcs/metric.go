@@ -1,7 +1,6 @@
 package funcs
 
 import (
-	"errors"
 	"fmt"
 	"github.com/soniah/gosnmp"
 	"log"
@@ -58,7 +57,7 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 		}
 		switch data.Type {
 		case gosnmp.OctetString:
-			return data.Value, nil
+			return fmt.Sprintf("%s", string(data.Value.([]byte))), nil
 		default:
 			ret := fmt.Sprintf("%d", gosnmp.ToBigInt(data.Value))
 			if i, err := strconv.ParseInt(ret, 10, 64); err == nil && i != 0 {
@@ -69,15 +68,26 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 	return int64(0), nil
 }
 
-func (querier *QueryExecuter) GetBulkMetricValue(oid string) (interface{}, error) {
+func (querier *QueryExecuter) GetBulkMetricValue(oid string) (map[string]interface{}, error) {
 	results, err := querier.Interal.BulkWalkAll(oid)
+	data := make(map[string]interface{})
 	if err != nil {
 		log.Println(" builk oid value failed, err is ", err, "oid is:", oid)
-		return nil, err
+		return data, err
 	}
 
 	for _, variable := range results {
-		return variable.Value, nil
+		keys := strings.Split(variable.Name, ".")
+		key := keys[len(keys)-1]
+		switch variable.Type {
+		case gosnmp.OctetString:
+			data[key] = fmt.Sprintf("%s", string(variable.Value.([]byte)))
+		default:
+			ret := fmt.Sprintf("%d", gosnmp.ToBigInt(variable.Value))
+			if i, err := strconv.ParseInt(ret, 10, 64); err == nil {
+				data[key] = i
+			}
+		}
 	}
-	return nil, errors.New("Empty bulk metric value for " + oid)
+	return data, nil
 }

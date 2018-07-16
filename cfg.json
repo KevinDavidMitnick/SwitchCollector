@@ -1,10 +1,10 @@
 {
     "udp" : {
-        "enable": true,
+        "enabled": true,
         "addr" : "0.0.0.0:514"
     },
     "http" : {
-        "enable": true,
+        "enabled": true,
         "addr" : "0.0.0.0:8080"
     },
     "templates" : {

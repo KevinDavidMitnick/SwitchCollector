@@ -104,3 +104,21 @@ func GetInterfaceInfo(ip string) *InterfaceInfo {
 	ret.StatisticsTime = time.Now().Unix()
 	return &ret
 }
+
+func GetInterfaceMetric(ip string) *InterfaceInfo {
+	var ret InterfaceInfo
+	ret.Data = make(map[string]map[string]interface{})
+	for metricName, metricData := range globalData.Metrics[ip] {
+		if metricData.MetricType == "multimetrics" {
+			for interfaceName, values := range metricData.Data {
+				if ret.Data[interfaceName] == nil {
+					ret.Data[interfaceName] = make(map[string]interface{})
+				}
+				ret.Data[interfaceName][metricName] = values
+			}
+		}
+	}
+
+	ret.StatisticsTime = time.Now().Unix()
+	return &ret
+}

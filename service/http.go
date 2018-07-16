@@ -92,10 +92,26 @@ func GetInterfaceInfo(w http.ResponseWriter, r *http.Request) {
 	w.Write(ret)
 }
 
+func GetInterfaceMetric(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "parse data error", http.StatusBadRequest)
+		return
+	}
+	ip := strings.TrimSpace(r.Form.Get("ip"))
+	deviceInfo := g.GetInterfaceMetric(ip)
+	ret, err := json.Marshal(deviceInfo)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Write(ret)
+}
+
 func StartHttpServer() {
 	log.Println("starting http server....")
 	http.HandleFunc("/GetDeviceList", GetDeviceList)
 	http.HandleFunc("/GetDeviceInfo", GetDeviceInfo)
 	http.HandleFunc("/GetInterfaceInfo", GetInterfaceInfo)
+	http.HandleFunc("/GetInterfaceMetric", GetInterfaceMetric)
 	http.ListenAndServe(g.Config().Http.Addr, nil)
 }

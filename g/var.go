@@ -117,6 +117,9 @@ func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric
 	var ret InterfaceMetric
 	ret.Data = make(map[string]map[string][]interface{})
 	startTime := time.Now().Unix() - period
+	if period == 0 {
+		startTime = 0
+	}
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {

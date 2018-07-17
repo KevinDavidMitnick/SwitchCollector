@@ -44,25 +44,19 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 
 	oids := []string{oid}
 
-	for {
-		result, err := querier.Interal.GetNext(oids)
-		if err != nil {
-			log.Println("Get oid value failed, err is: ", err, "oid is:", oid)
-			break
-		}
+	result, err := querier.Interal.Get(oids)
+	if err != nil {
+		log.Println("Get oid value failed, err is: ", err, "oid is:", oid)
+	}
 
-		data := result.Variables[0]
-		if !strings.Contains(data.Name, oid) {
-			break
-		}
-		switch data.Type {
-		case gosnmp.OctetString:
-			return fmt.Sprintf("%s", string(data.Value.([]byte))), nil
-		default:
-			ret := fmt.Sprintf("%d", gosnmp.ToBigInt(data.Value))
-			if i, err := strconv.ParseInt(ret, 10, 64); err == nil && i != 0 {
-				return i, nil
-			}
+	data := result.Variables[0]
+	switch data.Type {
+	case gosnmp.OctetString:
+		return fmt.Sprintf("%s", string(data.Value.([]byte))), nil
+	default:
+		ret := fmt.Sprintf("%d", gosnmp.ToBigInt(data.Value))
+		if i, err := strconv.ParseInt(ret, 10, 64); err == nil && i != 0 {
+			return i, nil
 		}
 	}
 	return int64(0), nil

@@ -33,7 +33,7 @@ func GetQuerier(ip string, community string, version string, timeout int) *Query
 	}
 	err := querier.Interal.Connect()
 	if err != nil {
-		log.Println("querier connect err.")
+		log.Println("querier connect err,ip is:", ip)
 	}
 	return &querier
 }
@@ -45,7 +45,7 @@ func (querier *QueryExecuter) Close() {
 func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println(" Recovered in GetMetricValue", r, "oid is:", oid)
+			log.Println(" Recovered in GetMetricValue", r, "oid is:", oid, "ip :", querier.Interal.Target, "port :", querier.Interal.Port)
 		}
 	}()
 
@@ -53,7 +53,7 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 
 	result, err := querier.Interal.Get(oids)
 	if err != nil {
-		log.Println("Get oid value failed, err is: ", err, "oid is:", oid)
+		log.Println("Get oid value failed, err is: ", err, "oid is:", oid, "ip :", querier.Interal.Target, "port :", querier.Interal.Port)
 	}
 
 	data := result.Variables[0]
@@ -73,7 +73,7 @@ func (querier *QueryExecuter) GetBulkMetricValue(oid string) (map[string]interfa
 	results, err := querier.Interal.BulkWalkAll(oid)
 	data := make(map[string]interface{})
 	if err != nil {
-		log.Println(" builk oid value failed, err is ", err, "oid is:", oid)
+		log.Println(" builk oid value failed, err is ", err, "oid is:", oid, "ip :", querier.Interal.Target, "port :", querier.Interal.Port)
 		return data, err
 	}
 

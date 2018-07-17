@@ -23,7 +23,7 @@ func GetQuerier(ip string, community string, version string, timeout int) *Query
 		}
 	}
 	querier.Interal = &gosnmp.GoSNMP{
-		Target:    ip,
+		Target:    ip_port[0],
 		Port:      port,
 		Community: community,
 		Version:   gosnmp.Version2c,

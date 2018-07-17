@@ -64,7 +64,6 @@ type Extension struct {
 type NetDevice struct {
 	Ip        string     `json:"ip"`
 	Community string     `json:"community"`
-	Port      int        `json:"port"`
 	Version   string     `json:"version"`
 	Class     string     `json:"class"`
 	Type      string     `json:"type"`

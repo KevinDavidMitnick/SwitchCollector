@@ -12,7 +12,6 @@ import (
 type MetricDevice struct {
 	Ip           string               `json:"ip"`
 	Community    string               `json:"community"`
-	Port         int                  `json:"port"`
 	Version      string               `json:"version"`
 	Class        string               `json:"class"`
 	Type         string               `json:"type"`
@@ -32,7 +31,6 @@ type Executer struct {
 	scheduler.Object
 	Ip         string `json:"ip"`
 	Community  string `json:"community"`
-	Port       int    `json:"port"`
 	Version    string `json:"version"`
 	Oid        string `json:"oid"`
 	Interval   int64  `json:"interval"`
@@ -119,7 +117,7 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 }
 
 func (e *Executer) CollectData() {
-	querier := funcs.GetQuerier(e.Ip, e.Port, e.Community, e.Version, e.Timeout)
+	querier := funcs.GetQuerier(e.Ip, e.Community, e.Version, e.Timeout)
 	defer querier.Close()
 
 	switch e.MetricType {
@@ -150,7 +148,6 @@ func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	var device MetricDevice
 	device.Ip = dev.Ip
 	device.Community = dev.Community
-	device.Port = dev.Port
 	device.Version = dev.Version
 	device.Class = dev.Class
 	device.Type = dev.Type
@@ -207,12 +204,12 @@ func GetDevice() *Device {
 	return &device
 }
 
-func buildIndexNameMap(ip string, port int, community string, version string, timeout int) {
+func buildIndexNameMap(ip string, community string, version string, timeout int) {
 	indexNameMap := g.GetIndexNameMap()
 	if indexNameMap[ip] == nil {
 		indexNameMap[ip] = make(map[string]string)
 	}
-	querier := funcs.GetQuerier(ip, port, community, version, timeout)
+	querier := funcs.GetQuerier(ip, community, version, timeout)
 	defer querier.Close()
 	tempMap, err := querier.GetBulkMetricValue(".1.3.6.1.2.1.2.2.1.2")
 	if err != nil {
@@ -231,7 +228,7 @@ func (device *Device) InitTasks() {
 		dev := netDevs[ip]
 		metricDevice := mergeMetrics(dev, metricM[dev.Type])
 		device.tasks = append(device.tasks, metricDevice)
-		buildIndexNameMap(ip, dev.Port, dev.Community, dev.Version, metricM[dev.Type].Timeout)
+		buildIndexNameMap(ip, dev.Community, dev.Version, metricM[dev.Type].Timeout)
 	}
 }
 
@@ -248,7 +245,6 @@ func (device *Device) InitScheduler() {
 				var executer Executer
 				executer.Ip = metricDevice.Ip
 				executer.Community = metricDevice.Community
-				executer.Port = metricDevice.Port
 				executer.Version = metricDevice.Version
 				executer.Interval = metricDevice.Interval
 				executer.Oid = metric.Oid

@@ -1,7 +1,6 @@
 {
-   "ip" : "117.48.207.2",
+   "ip" : "117.48.207.2:16106",
    "community": "chinac.com",
-   "port" : 16106,
    "verssion": "v2",
    "class" : "H3C",
    "type"  : "H3C_S6800-54QF",

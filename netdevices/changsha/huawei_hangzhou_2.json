@@ -1,7 +1,6 @@
 {
-   "ip" : "110.88.128.130",
+   "ip" : "110.88.128.130:16103",
    "community": "chinac.com",
-   "port": 16103,
    "version": "v2",
    "class" : "HUAWEI",
    "type"  : "HUAWEI_CE8860-4C-EI",

@@ -13,11 +13,18 @@ type QueryExecuter struct {
 	Interal *gosnmp.GoSNMP
 }
 
-func GetQuerier(ip string, port int, community string, version string, timeout int) *QueryExecuter {
+func GetQuerier(ip string, community string, version string, timeout int) *QueryExecuter {
 	var querier QueryExecuter
+	ip_port := strings.Split(ip, ":")
+	port := uint16(161)
+	if len(ip_port) == 2 {
+		if data, err := strconv.ParseUint(ip_port[1], 10, 16); err == nil {
+			port = uint16(data)
+		}
+	}
 	querier.Interal = &gosnmp.GoSNMP{
 		Target:    ip,
-		Port:      uint16(port),
+		Port:      port,
 		Community: community,
 		Version:   gosnmp.Version2c,
 		Timeout:   time.Duration(timeout) * time.Second,

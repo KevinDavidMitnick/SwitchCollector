@@ -1,6 +1,7 @@
 package g
 
 import (
+	"strings"
 	"sync"
 	"time"
 )
@@ -86,17 +87,19 @@ func GetDeviceInfo(ip string) *DeviceInfo {
 	return &ret
 }
 
-func GetInterfaceInfo(ip string) *InterfaceInfo {
+func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
 	var ret InterfaceInfo
 	ret.Data = make(map[string]map[string]interface{})
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multiinfos" || metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {
-				if ret.Data[interfaceName] == nil {
-					ret.Data[interfaceName] = make(map[string]interface{})
+				if strings.Contains(interfaceName, filter) {
+					if ret.Data[interfaceName] == nil {
+						ret.Data[interfaceName] = make(map[string]interface{})
+					}
+					length := len(values)
+					ret.Data[interfaceName][metricName] = values[length-1].Value
 				}
-				length := len(values)
-				ret.Data[interfaceName][metricName] = values[length-1].Value
 			}
 		}
 	}
@@ -105,16 +108,18 @@ func GetInterfaceInfo(ip string) *InterfaceInfo {
 	return &ret
 }
 
-func GetInterfaceMetric(ip string) *InterfaceInfo {
+func GetInterfaceMetric(ip string, filter string) *InterfaceInfo {
 	var ret InterfaceInfo
 	ret.Data = make(map[string]map[string]interface{})
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {
-				if ret.Data[interfaceName] == nil {
-					ret.Data[interfaceName] = make(map[string]interface{})
+				if strings.Contains(interfaceName, filter) {
+					if ret.Data[interfaceName] == nil {
+						ret.Data[interfaceName] = make(map[string]interface{})
+					}
+					ret.Data[interfaceName][metricName] = values
 				}
-				ret.Data[interfaceName][metricName] = values
 			}
 		}
 	}

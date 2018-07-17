@@ -17,12 +17,13 @@ GET /GetInterfaceMetric HTTP/1.1
 |名称|类型|描述|是否非空|
 | ------------- |:-------------: |:-------------:| ------------- |
 |ip |String|IP地址|非空|
+|filter |String|用于过滤端口的名称 |可以为空 |
 
 #### 请求示例
 
 ##### Request
 ```
-GET /GetInterfaceMetric?ip=10.0.20.254 HTTP/1.1
+GET /GetInterfaceMetric?ip=10.0.20.254&filter=GigabitEthernet   HTTP/1.1
 ```
 
 ##### Response

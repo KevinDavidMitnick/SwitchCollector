@@ -82,8 +82,9 @@ func GetInterfaceInfo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "parse data error", http.StatusBadRequest)
 		return
 	}
+	filter := strings.TrimSpace(r.Form.Get("filter"))
 	ip := strings.TrimSpace(r.Form.Get("ip"))
-	deviceInfo := g.GetInterfaceInfo(ip)
+	deviceInfo := g.GetInterfaceInfo(ip, filter)
 	ret, err := json.Marshal(deviceInfo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -97,8 +98,9 @@ func GetInterfaceMetric(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "parse data error", http.StatusBadRequest)
 		return
 	}
+	filter := strings.TrimSpace(r.Form.Get("filter"))
 	ip := strings.TrimSpace(r.Form.Get("ip"))
-	deviceInfo := g.GetInterfaceMetric(ip)
+	deviceInfo := g.GetInterfaceMetric(ip, filter)
 	ret, err := json.Marshal(deviceInfo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

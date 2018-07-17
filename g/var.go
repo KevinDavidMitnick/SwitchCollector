@@ -142,3 +142,35 @@ func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric
 	ret.StatisticsTime = time.Now().Unix()
 	return &ret
 }
+
+func CleanAllStale(timestamp int64) {
+	for ip, datas := range globalData.Metrics {
+		for metricName, metricData := range datas {
+			for interfaceName, values := range metricData.Data {
+				i := len(values)
+				j := 0
+				for ; j < i; j++ {
+					if values[j].Timestamp >= timestamp {
+						break
+					}
+				}
+				if j >= i {
+					j = i - 1
+				}
+				if j < 0 {
+					j = 0
+				}
+				globalData.Metrics[ip][metricName].Data[interfaceName] = values[j:]
+				if len(globalData.Metrics[ip][metricName].Data[interfaceName]) == 0 {
+					delete(globalData.Metrics[ip][metricName].Data, interfaceName)
+				}
+			}
+			if len(globalData.Metrics[ip][metricName].Data) == 0 {
+				delete(globalData.Metrics[ip], metricName)
+			}
+		}
+		if len(globalData.Metrics[ip]) == 0 {
+			delete(globalData.Metrics, ip)
+		}
+	}
+}

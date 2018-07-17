@@ -7,6 +7,7 @@ import (
 	"github.com/SwitchCollector/core/scheduler"
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/service/funcs"
+	"time"
 )
 
 type MetricDevice struct {
@@ -264,7 +265,6 @@ func (device *Device) InitScheduler() {
 
 func (device *Device) Collect() {
 	device.scheduler.Scheduler()
-	select {}
 }
 
 func (device *Device) Flush() {
@@ -272,5 +272,16 @@ func (device *Device) Flush() {
 }
 
 func (device *Device) CleanStale() {
+	expire := time.Duration(g.Config().Expire)
+	ticker := time.NewTicker(expire * time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			timestamp := time.Now().Unix() - int64(g.Config().Expire)
+			fmt.Println("start clean flow stale data")
+			g.CleanAllStale(timestamp)
+			fmt.Println("finish start clean flow stale data")
+		}
+	}
 
 }

@@ -1,0 +1,34 @@
+{
+   "ip" : "110.88.128.130",
+   "community": "chinac.com",
+   "port": 16103,
+   "version": "v2",
+   "class" : "HUAWEI",
+   "type"  : "HUAWEI_CE8860-4C-EI",
+   "extension" : {
+       "enabled" : true,
+       "metrics" : {
+        "光模块1温度" : {
+            "oid" : ".1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5.16850946",
+            "interval" : 10,
+            "datatype": "GAUGE"
+        },
+        "光模块2温度" : {
+            "oid" : ".1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5.16850947",
+            "interval" : 10,
+            "datatype": "GAUGE"
+        }
+       },
+       "infos" : {
+           "设备温度" : {
+               "oid" : ".1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.16842753",
+               "interval" : 10,
+               "datatype": "GAUGE"
+           }
+       },
+       "multimetrics":{
+        },
+        "multiinfos": {
+        }
+    }
+}

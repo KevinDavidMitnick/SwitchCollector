@@ -1,0 +1,29 @@
+{
+   "ip" : "117.48.207.2",
+   "community": "chinac.com",
+   "port" : 16102,
+   "verssion": "v2",
+   "class" : "H3C",
+   "type"  : "H3C_S6800-54QF",
+   "extension" : {
+       "enabled" : true,
+       "metrics" : {
+       },
+       "infos" : {
+        "风扇口1状态" : {
+            "oid" : ".1.3.6.1.4.1.25506.8.35.9.1.1.1.2.1",
+            "interval" : 10,
+            "datatype": "GAUGE"
+        },
+        "风扇口2状态" : {
+            "oid" : ".1.3.6.1.4.1.25506.8.35.9.1.1.1.2.2",
+            "interval" : 10,
+            "datatype": "GAUGE"
+        }
+       },
+       "multimetrics":{
+        },
+        "multiinfos": {
+        }
+    }
+}

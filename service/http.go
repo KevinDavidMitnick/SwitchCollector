@@ -28,6 +28,7 @@ func FlowQuantityBytes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(ret)
 
 }
@@ -49,6 +50,7 @@ func VisitLog(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(ret)
 }
 
@@ -59,6 +61,7 @@ func GetDeviceList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(ret)
 }
 
@@ -74,6 +77,7 @@ func GetDeviceInfo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(ret)
 }
 
@@ -90,6 +94,7 @@ func GetInterfaceInfo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(ret)
 }
 
@@ -106,6 +111,7 @@ func GetInterfaceMetric(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(ret)
 }
 

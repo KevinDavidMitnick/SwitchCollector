@@ -18,12 +18,13 @@ GET /GetInterfaceMetric HTTP/1.1
 | ------------- |:-------------: |:-------------:| ------------- |
 |ip |String|IP地址|非空|
 |filter |String|用于过滤端口的名称 |可以为空 |
+|Period |int   |查询最近多长时间内的指标,单位秒 |可以为空,为空则查询所有时间点指标 |
 
 #### 请求示例
 
 ##### Request
 ```
-GET /GetInterfaceMetric?ip=10.0.20.254&filter=GigabitEthernet   HTTP/1.1
+GET /GetInterfaceMetric?ip=10.0.20.254&filter=GigabitEthernet&period=300  HTTP/1.1
 ```
 
 ##### Response

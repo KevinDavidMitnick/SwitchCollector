@@ -104,8 +104,10 @@ func GetInterfaceMetric(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filter := strings.TrimSpace(r.Form.Get("filter"))
+	period := strings.TrimSpace(r.Form.Get("period"))
+	p, _ := strconv.ParseInt(period, 10, 64)
 	ip := strings.TrimSpace(r.Form.Get("ip"))
-	deviceInfo := g.GetInterfaceMetric(ip, filter)
+	deviceInfo := g.GetInterfaceMetric(ip, filter, p)
 	ret, err := json.Marshal(deviceInfo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -36,6 +36,11 @@ type InterfaceInfo struct {
 	StatisticsTime int64                             `json:"StatisticsTime"`
 }
 
+type InterfaceMetric struct {
+	Data           map[string]map[string][]interface{} `json:"Data"`
+	StatisticsTime int64                               `json:"StatisticsTime"`
+}
+
 var (
 	locker       sync.RWMutex
 	globalData   DeviceData
@@ -108,17 +113,24 @@ func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
 	return &ret
 }
 
-func GetInterfaceMetric(ip string, filter string) *InterfaceInfo {
-	var ret InterfaceInfo
-	ret.Data = make(map[string]map[string]interface{})
+func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric {
+	var ret InterfaceMetric
+	ret.Data = make(map[string]map[string][]interface{})
+	startTime := time.Now().Unix() - period
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {
 				if strings.Contains(interfaceName, filter) {
 					if ret.Data[interfaceName] == nil {
-						ret.Data[interfaceName] = make(map[string]interface{})
+						ret.Data[interfaceName] = make(map[string][]interface{})
 					}
-					ret.Data[interfaceName][metricName] = values
+					length := len(values)
+					for i := length - 1; i >= 0; i-- {
+						if values[i].Timestamp < startTime {
+							break
+						}
+						ret.Data[interfaceName][metricName] = append(ret.Data[interfaceName][metricName], values[i])
+					}
 				}
 			}
 		}

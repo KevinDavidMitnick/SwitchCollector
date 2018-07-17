@@ -12,7 +12,8 @@ import (
 
 //Ping check,switch ping .
 func Ping(ip string, timeout int) (int64, int64) {
-	cmd := exec.Command("/bin/bash", "-c", "ping "+ip+" -c 2")
+	ip_port := strings.Split(ip, ":")
+	cmd := exec.Command("/bin/bash", "-c", "ping "+ip_port[0]+" -c 2")
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	var stderr bytes.Buffer

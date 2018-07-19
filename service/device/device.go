@@ -56,6 +56,8 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 	gData := g.GetGlobalData()
 	indexNameMap := g.GetIndexNameMap()
 
+	g.Locker.Lock()
+	defer g.Locker.Unlock()
 	if gData.Metrics[ip] == nil {
 		gData.Metrics[ip] = make(map[string]*g.MetricData)
 	}
@@ -207,6 +209,9 @@ func GetDevice() *Device {
 
 func buildIndexNameMap(ip string, community string, version string, timeout int) {
 	indexNameMap := g.GetIndexNameMap()
+
+	g.Locker.Lock()
+	defer g.Locker.Unlock()
 	if indexNameMap[ip] == nil {
 		indexNameMap[ip] = make(map[string]string)
 	}

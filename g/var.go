@@ -42,14 +42,14 @@ type InterfaceMetric struct {
 }
 
 var (
-	locker       sync.RWMutex
+	Locker       sync.RWMutex
 	globalData   DeviceData
 	indexNameMap map[string]map[string]string
 )
 
 func GetGlobalData() *DeviceData {
-	locker.Lock()
-	defer locker.Unlock()
+	Locker.Lock()
+	defer Locker.Unlock()
 
 	if globalData.Metrics == nil {
 		globalData.Metrics = make(map[string]map[string]*MetricData)
@@ -58,8 +58,8 @@ func GetGlobalData() *DeviceData {
 }
 
 func GetIndexNameMap() map[string]map[string]string {
-	locker.Lock()
-	defer locker.Unlock()
+	Locker.Lock()
+	defer Locker.Unlock()
 
 	if indexNameMap == nil {
 		indexNameMap = make(map[string]map[string]string)
@@ -69,6 +69,9 @@ func GetIndexNameMap() map[string]map[string]string {
 }
 
 func GetDeviceList() *DeviceList {
+	Locker.RLock()
+	defer Locker.RUnlock()
+
 	var ret DeviceList
 	ret.Data = make([]string, 0)
 	for ip := range indexNameMap {
@@ -79,6 +82,9 @@ func GetDeviceList() *DeviceList {
 }
 
 func GetDeviceInfo(ip string) *DeviceInfo {
+	Locker.RLock()
+	defer Locker.RUnlock()
+
 	var ret DeviceInfo
 	ret.Data = make([]map[string]interface{}, 0)
 	for metricName, metricData := range globalData.Metrics[ip] {
@@ -93,6 +99,9 @@ func GetDeviceInfo(ip string) *DeviceInfo {
 }
 
 func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
+	Locker.RLock()
+	defer Locker.RUnlock()
+
 	var ret InterfaceInfo
 	ret.Data = make(map[string]map[string]interface{})
 	for metricName, metricData := range globalData.Metrics[ip] {
@@ -114,6 +123,9 @@ func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
 }
 
 func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric {
+	Locker.RLock()
+	defer Locker.RUnlock()
+
 	var ret InterfaceMetric
 	ret.Data = make(map[string]map[string][]interface{})
 	startTime := time.Now().Unix() - period
@@ -144,6 +156,9 @@ func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric
 }
 
 func CleanAllStale(timestamp int64) {
+	Locker.Lock()
+	defer Locker.Unlock()
+
 	for ip, datas := range globalData.Metrics {
 		for metricName, metricData := range datas {
 			for interfaceName, values := range metricData.Data {

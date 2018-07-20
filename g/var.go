@@ -107,7 +107,7 @@ func GetInterfaceInfo(ip string, filter string, accurate string) *InterfaceInfo 
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multiinfos" || metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {
-				if (accurate == "true" && interfaceName == filter) || (accurate == "true" && strings.Contains(interfaceName, filter)) {
+				if (accurate == "true" && interfaceName == filter) || (accurate != "true" && strings.Contains(interfaceName, filter)) {
 					if ret.Data[interfaceName] == nil {
 						ret.Data[interfaceName] = make(map[string]interface{})
 					}

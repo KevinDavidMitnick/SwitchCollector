@@ -84,6 +84,9 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 			} else {
 				len := len(gData.Metrics[ip][name].Data["liucong"])
 				curvalue := (value.(int64) - gData.Metrics[ip][name].Data["liucong"][len-1].LastValue.(int64)) / interval
+				if curvalue < 0 {
+					curvalue = value.(int64) / interval
+				}
 				dataValue := g.DataValue{LastValue: value, Value: curvalue, Timestamp: timestamp}
 				gData.Metrics[ip][name].Data["liucong"] = append(gData.Metrics[ip][name].Data["liucong"], &dataValue)
 			}
@@ -106,6 +109,9 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 				} else {
 					len := len(gData.Metrics[ip][name].Data[indexNameMap[ip][k]])
 					curvalue := (v.(int64) - gData.Metrics[ip][name].Data[indexNameMap[ip][k]][len-1].LastValue.(int64)) / interval
+					if curvalue < 0 {
+						curvalue = v.(int64) / interval
+					}
 					dataValue := g.DataValue{LastValue: v, Value: curvalue, Timestamp: timestamp}
 					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = append(gData.Metrics[ip][name].Data[indexNameMap[ip][k]], &dataValue)
 				}

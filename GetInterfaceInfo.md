@@ -18,12 +18,13 @@ GET /GetInterfaceInfo HTTP/1.1
 | ------------- |:-------------: |:-------------:| ------------- |
 |ip |String|IP地址|非空|
 |filter |String|用于过滤端口的名称 |可以为空 |
+|accurate  |bool   |用于判断精确还是模糊匹配 |可以为空 true/false,默认为空则是false |
 
 #### 请求示例
 
 ##### Request
 ```
-GET /GetInterfaceInfo?ip=10.0.20.254&filter=GigabitEthernet HTTP/1.1
+GET /GetInterfaceInfo?ip=10.0.20.254&filter=GigabitEthernet&accurate=false HTTP/1.1
 ```
 
 ##### Response

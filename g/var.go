@@ -98,7 +98,7 @@ func GetDeviceInfo(ip string) *DeviceInfo {
 	return &ret
 }
 
-func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
+func GetInterfaceInfo(ip string, filter string, accurate string) *InterfaceInfo {
 	Locker.RLock()
 	defer Locker.RUnlock()
 
@@ -107,7 +107,7 @@ func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multiinfos" || metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {
-				if strings.Contains(interfaceName, filter) {
+				if (accurate == "true" && interfaceName == filter) || (accurate != "true " && strings.Contains(interfaceName, filter)) {
 					if ret.Data[interfaceName] == nil {
 						ret.Data[interfaceName] = make(map[string]interface{})
 					}
@@ -122,7 +122,7 @@ func GetInterfaceInfo(ip string, filter string) *InterfaceInfo {
 	return &ret
 }
 
-func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric {
+func GetInterfaceMetric(ip string, filter string, accurate string, period int64) *InterfaceMetric {
 	Locker.RLock()
 	defer Locker.RUnlock()
 
@@ -135,7 +135,7 @@ func GetInterfaceMetric(ip string, filter string, period int64) *InterfaceMetric
 	for metricName, metricData := range globalData.Metrics[ip] {
 		if metricData.MetricType == "multimetrics" {
 			for interfaceName, values := range metricData.Data {
-				if strings.Contains(interfaceName, filter) {
+				if (accurate == "true" && interfaceName == filter) || (accurate != "true " && strings.Contains(interfaceName, filter)) {
 					if ret.Data[interfaceName] == nil {
 						ret.Data[interfaceName] = make(map[string][]interface{})
 					}

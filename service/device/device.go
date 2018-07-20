@@ -67,48 +67,43 @@ func saveToGD(ip string, name string, timeout int, metricType string, dataType s
 	gData.Metrics[ip][name].MetricType = metricType
 	if gData.Metrics[ip][name].Data == nil {
 		gData.Metrics[ip][name].Data = make(map[string][]*g.DataValue)
-		switch metricType {
-		case "metrics", "infos":
-			if dataType == "GAUGE" {
-				dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: timestamp}
+	}
+	switch metricType {
+	case "metrics", "infos":
+		if dataType == "GAUGE" {
+			dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: timestamp}
+			if gData.Metrics[ip][name].Data["liucong"] == nil {
 				gData.Metrics[ip][name].Data["liucong"] = []*g.DataValue{&dataValue}
 			} else {
+				gData.Metrics[ip][name].Data["liucong"] = append(gData.Metrics[ip][name].Data["liucong"], &dataValue)
+			}
+		} else {
+			if gData.Metrics[ip][name].Data["liucong"] == nil {
 				dataValue := g.DataValue{LastValue: value, Value: int64(0), Timestamp: timestamp}
 				gData.Metrics[ip][name].Data["liucong"] = []*g.DataValue{&dataValue}
-			}
-		case "multimetrics", "multiinfos":
-			if dataType == "GAUGE" {
-				for k, v := range value.(map[string]interface{}) {
-					dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
-					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = []*g.DataValue{&dataValue}
-				}
-			} else {
-				for k, v := range value.(map[string]interface{}) {
-					dataValue := g.DataValue{LastValue: v, Value: int64(0), Timestamp: timestamp}
-					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = []*g.DataValue{&dataValue}
-				}
-			}
-		}
-	} else {
-		switch metricType {
-		case "metrics", "infos":
-			if dataType == "GAUGE" {
-				dataValue := g.DataValue{LastValue: value, Value: value, Timestamp: timestamp}
-				gData.Metrics[ip][name].Data["liucong"] = append(gData.Metrics[ip][name].Data["liucong"], &dataValue)
 			} else {
 				len := len(gData.Metrics[ip][name].Data["liucong"])
 				curvalue := (value.(int64) - gData.Metrics[ip][name].Data["liucong"][len-1].LastValue.(int64)) / interval
 				dataValue := g.DataValue{LastValue: value, Value: curvalue, Timestamp: timestamp}
 				gData.Metrics[ip][name].Data["liucong"] = append(gData.Metrics[ip][name].Data["liucong"], &dataValue)
 			}
-		case "multimetrics", "multiinfos":
-			if dataType == "GAUGE" {
-				for k, v := range value.(map[string]interface{}) {
-					dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
+		}
+	case "multimetrics", "multiinfos":
+		if dataType == "GAUGE" {
+			for k, v := range value.(map[string]interface{}) {
+				dataValue := g.DataValue{LastValue: v, Value: v, Timestamp: timestamp}
+				if gData.Metrics[ip][name].Data[indexNameMap[ip][k]] == nil {
+					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = []*g.DataValue{&dataValue}
+				} else {
 					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = append(gData.Metrics[ip][name].Data[indexNameMap[ip][k]], &dataValue)
 				}
-			} else {
-				for k, v := range value.(map[string]interface{}) {
+			}
+		} else {
+			for k, v := range value.(map[string]interface{}) {
+				if gData.Metrics[ip][name].Data[indexNameMap[ip][k]] == nil {
+					dataValue := g.DataValue{LastValue: v, Value: int64(0), Timestamp: timestamp}
+					gData.Metrics[ip][name].Data[indexNameMap[ip][k]] = []*g.DataValue{&dataValue}
+				} else {
 					len := len(gData.Metrics[ip][name].Data[indexNameMap[ip][k]])
 					curvalue := (v.(int64) - gData.Metrics[ip][name].Data[indexNameMap[ip][k]][len-1].LastValue.(int64)) / interval
 					dataValue := g.DataValue{LastValue: v, Value: curvalue, Timestamp: timestamp}

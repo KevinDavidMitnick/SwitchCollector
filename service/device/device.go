@@ -22,6 +22,7 @@ type MetricDevice struct {
 	MultiInfos   map[string]*g.Metric `json:"multiinfos"`
 	Timeout      int                  `json:"timeout"`
 	Interval     int64                `json:"interval"`
+	Uuid         string               `json:"uuid"`
 }
 type Device struct {
 	tasks     []*MetricDevice      `json:"tasks"`
@@ -40,21 +41,29 @@ type Executer struct {
 	Name       string `json:"name"`
 	MetricType string `json:"metrictype"`
 	Timestamp  int64  `json:"timestamp"`
+	Uuid       string `json:"uuid"`
 }
 
 func (e *Executer) PingCheck() {
 	value, _ := funcs.Ping(e.Ip, e.Timeout)
-	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
+	e.saveToGD(value)
+	if g.Config().Backend.Enabled {
+		e.saveToBackend(value)
+	}
 }
 
 func (e *Executer) PingLatency() {
 	_, value := funcs.Ping(e.Ip, e.Timeout)
-	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
+	e.saveToGD(value)
+	if g.Config().Backend.Enabled {
+		e.saveToBackend(value)
+	}
 }
 
-func saveToBackend(ip string, name string, timeout int, metricType string, dataType string, timestamp int64, interval int64, value interface{}) {
+func (e *Executer) saveToBackend(value interface{}) {
 	data := make([]map[string]interface{}, 0)
 
+	ip, name, metricType, dataType, timestamp, interval := e.Ip, e.Name, e.MetricType, e.DataType, e.Timestamp, e.Interval
 	switch metricType {
 	case "metrics":
 		elem := make(map[string]interface{})
@@ -84,16 +93,14 @@ func saveToBackend(ip string, name string, timeout int, metricType string, dataT
 	funcs.Send(g.Config().Backend.Addr, data)
 }
 
-func saveToGD(ip string, name string, timeout int, metricType string, dataType string, timestamp int64, interval int64, value interface{}) {
-	if g.Config().Backend.Enabled {
-		saveToBackend(ip, name, timeout, metricType, dataType, timestamp, interval, value)
-	}
-
+func (e *Executer) saveToGD(value interface{}) {
 	gData := g.GetGlobalData()
 	indexNameMap := g.GetIndexNameMap()
 
 	g.Locker.Lock()
 	defer g.Locker.Unlock()
+
+	ip, name, metricType, dataType, timestamp, interval := e.Ip, e.Name, e.MetricType, e.DataType, e.Timestamp, e.Interval
 	if gData.Metrics[ip] == nil {
 		gData.Metrics[ip] = make(map[string]*g.MetricData)
 	}
@@ -163,10 +170,16 @@ func (e *Executer) CollectData() {
 	switch e.MetricType {
 	case "metrics", "infos":
 		value, _ := querier.GetMetricValue(e.Oid)
-		saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
+		e.saveToGD(value)
+		if g.Config().Backend.Enabled {
+			e.saveToBackend(value)
+		}
 	case "multimetrics", "multiinfos":
 		value, _ := querier.GetBulkMetricValue(e.Oid)
-		saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
+		e.saveToGD(value)
+		if g.Config().Backend.Enabled {
+			e.saveToBackend(value)
+		}
 	default:
 		fmt.Println("not right metric type:", e.MetricType)
 	}
@@ -191,6 +204,7 @@ func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	device.Version = dev.Version
 	device.Class = dev.Class
 	device.Type = dev.Type
+	device.Uuid = dev.Uuid
 
 	metrics := metricT.Metrics
 	if metrics == nil {
@@ -298,6 +312,7 @@ func (device *Device) InitScheduler() {
 				executer.Timeout = metricDevice.Timeout
 				executer.Name = name
 				executer.MetricType = metricType
+				executer.Uuid = metricDevice.Uuid
 
 				device.scheduler.Queue[executer.Interval] = append(device.scheduler.Queue[executer.Interval], &executer)
 			}

@@ -1,9 +1,11 @@
 {
+   "uuid" : "17a09a3e-355d-49ae-a254-680950d0e36a",
    "ip" : "117.48.207.2:16103",
    "community": "chinac.com",
    "verssion": "v2",
    "class" : "H3C",
    "type"  : "H3C_S6800-54QF",
+   "uuid" : "",
    "extension" : {
        "enabled" : true,
        "metrics" : {

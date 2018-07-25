@@ -74,6 +74,7 @@ type NetDevice struct {
 	Class     string     `json:"class"`
 	Type      string     `json:"type"`
 	Extension *Extension `json:"extension"`
+	Uuid      string     `json:"uuid"`
 }
 
 var (

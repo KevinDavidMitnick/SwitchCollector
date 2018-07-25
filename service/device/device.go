@@ -63,11 +63,15 @@ func (e *Executer) PingLatency() {
 func (e *Executer) saveToBackend(value interface{}) {
 	data := make([]map[string]interface{}, 0)
 
-	ip, name, metricType, dataType, timestamp, interval := e.Ip, e.Name, e.MetricType, e.DataType, e.Timestamp, e.Interval
+	uuid, ip, name, metricType, dataType, timestamp, interval := e.Uuid, e.Ip, e.Name, e.MetricType, e.DataType, e.Timestamp, e.Interval
 	switch metricType {
 	case "metrics":
 		elem := make(map[string]interface{})
-		elem["endpoint"] = ip
+		if uuid == "" {
+			elem["endpoint"] = ip
+		} else {
+			elem["endpoint"] = uuid
+		}
 		elem["metric"] = name
 		elem["timestamp"] = timestamp
 		elem["step"] = interval
@@ -80,7 +84,11 @@ func (e *Executer) saveToBackend(value interface{}) {
 		for k, v := range value.(map[string]interface{}) {
 			interfaceName := indexNameMap[ip][k]
 			elem := make(map[string]interface{})
-			elem["endpoint"] = ip
+			if uuid == "" {
+				elem["endpoint"] = ip
+			} else {
+				elem["endpoint"] = uuid
+			}
 			elem["metric"] = name
 			elem["timestamp"] = timestamp
 			elem["step"] = interval

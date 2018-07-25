@@ -52,7 +52,43 @@ func (e *Executer) PingLatency() {
 	saveToGD(e.Ip, e.Name, e.Timeout, e.MetricType, e.DataType, e.Timestamp, e.Interval, value)
 }
 
+func saveToBackend(ip string, name string, timeout int, metricType string, dataType string, timestamp int64, interval int64, value interface{}) {
+	data := make([]map[string]interface{}, 0)
+
+	switch metricType {
+	case "metrics":
+		elem := make(map[string]interface{})
+		elem["endpoint"] = ip
+		elem["metric"] = name
+		elem["timestamp"] = timestamp
+		elem["step"] = interval
+		elem["countType"] = dataType
+		elem["tags"] = ""
+		elem["value"] = value
+		data = append(data, elem)
+	case "multimetrics":
+		indexNameMap := g.GetIndexNameMap()
+		for k, v := range value.(map[string]interface{}) {
+			interfaceName := indexNameMap[ip][k]
+			elem := make(map[string]interface{})
+			elem["endpoint"] = ip
+			elem["metric"] = name
+			elem["timestamp"] = timestamp
+			elem["step"] = interval
+			elem["countType"] = dataType
+			elem["tags"] = "iface=" + interfaceName
+			elem["value"] = v
+			data = append(data, elem)
+		}
+	}
+	funcs.Send(g.Config().Backend.Addr, data)
+}
+
 func saveToGD(ip string, name string, timeout int, metricType string, dataType string, timestamp int64, interval int64, value interface{}) {
+	if g.Config().Backend.Enabled {
+		saveToBackend(ip, name, timeout, metricType, dataType, timestamp, interval, value)
+	}
+
 	gData := g.GetGlobalData()
 	indexNameMap := g.GetIndexNameMap()
 
@@ -273,7 +309,7 @@ func (device *Device) Collect() {
 	device.scheduler.Scheduler()
 }
 
-func (device *Device) Flush() {
+func (device *Device) FlushBackend() {
 
 }
 

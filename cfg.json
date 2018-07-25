@@ -13,6 +13,10 @@
     "netdevices" : {
         "dir": "./netdevices"
     },
+    "backend" :{
+        "enabled" : true,
+        "addr" : "http://127.0.0.1:1988"
+    },
     "expire" : 3600,
     "interval": 10
 }

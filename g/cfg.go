@@ -27,11 +27,17 @@ type NetDevicesConfig struct {
 	Dir string `json:"dir"`
 }
 
+type BackendConfig struct {
+	Enabled bool   `json:"enabled"`
+	Addr    string `json:"addr"`
+}
+
 type GlobalConfig struct {
 	Udp        *UdpConfig        `json:"udp"`
 	Http       *HttpConfig       `json:"http"`
 	Templates  *TemplatesConfig  `json:"templates"`
 	NetDevices *NetDevicesConfig `json:"netdevices"`
+	Backend    *BackendConfig    `json:"backend"`
 	Expire     int               `json:"expire"`
 	Interval   int64             `json:"interval"`
 }

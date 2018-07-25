@@ -20,6 +20,8 @@ func StartUdpServ() {
 	}
 	defer socket.Close()
 
+	visit.Init()
+	go visit.CleanStale()
 	for {
 		// read data.
 		data := make([]byte, 1024)

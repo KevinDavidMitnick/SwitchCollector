@@ -75,7 +75,7 @@ func (e *Executer) saveToBackend(value interface{}) {
 		elem["metric"] = name
 		elem["timestamp"] = timestamp
 		elem["step"] = interval
-		elem["countType"] = dataType
+		elem["counterType"] = dataType
 		elem["tags"] = ""
 		elem["value"] = value
 		data = append(data, elem)
@@ -92,13 +92,15 @@ func (e *Executer) saveToBackend(value interface{}) {
 			elem["metric"] = name
 			elem["timestamp"] = timestamp
 			elem["step"] = interval
-			elem["countType"] = dataType
+			elem["counterType"] = dataType
 			elem["tags"] = "iface=" + interfaceName
 			elem["value"] = v
 			data = append(data, elem)
 		}
 	}
-	funcs.Send(g.Config().Backend.Addr, data)
+	if len(data) > 0 {
+		funcs.Send(g.Config().Backend.Addr, data)
+	}
 }
 
 func (e *Executer) saveToGD(value interface{}) {

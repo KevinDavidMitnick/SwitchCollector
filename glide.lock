@@ -1,0 +1,10 @@
+hash: 5af7933b57ea79673709512e9f2727d2dae54f68080dfb048e57afda9a19e161
+updated: 2018-07-26T14:28:04.731145534+08:00
+imports:
+- name: github.com/soniah/gosnmp
+  version: 66ab20702bef49a65afbe1350bca4d215d526509
+- name: github.com/toolkits/file
+  version: a5b3c5147e07f934d9f9d00b901a20b2529f1a57
+- name: github.com/toolkits/sys
+  version: 1f33b217ffafd62561fa8f5b4977dfe3099f47e3
+testImports: []

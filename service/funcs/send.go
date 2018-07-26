@@ -9,11 +9,11 @@ import (
 
 func Send(addr string, data interface{}) {
 	buf, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println("send err , data is:", data)
+	if err != nil || len(buf) == 0 {
+		fmt.Println("send json marshal err,or data len is 0 , data is:", data)
 		return
 	}
-	fmt.Println("send :%s,data :%s", addr, string(buf))
+	fmt.Printf("send :%s,data :%s", addr, string(buf))
 	request, _ := http.NewRequest("POST", addr, bytes.NewBuffer(buf))
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	request.Header.Set("TIMEOUT", "10")

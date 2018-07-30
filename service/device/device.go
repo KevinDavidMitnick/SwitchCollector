@@ -65,6 +65,9 @@ func (e *Executer) saveToBackend(value interface{}) {
 	data := make([]map[string]interface{}, 0)
 
 	uuid, ip, metricName, metricType, dataType, timestamp, interval := e.Uuid, e.Ip, e.MetricName, e.MetricType, e.DataType, e.Timestamp, e.Interval
+	if metricName == "" {
+		metricName = "switch." + e.Name
+	}
 	switch metricType {
 	case "metrics":
 		elem := make(map[string]interface{})

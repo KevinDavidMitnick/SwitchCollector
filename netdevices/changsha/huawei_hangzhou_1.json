@@ -11,12 +11,14 @@
         "光模块1温度" : {
             "oid" : ".1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5.16850946",
             "interval" : 60,
-            "datatype": "GAUGE"
+            "datatype": "GAUGE",
+            "metricname": "switch.temp.module.light1"
         },
         "光模块2温度" : {
             "oid" : ".1.3.6.1.4.1.2011.5.25.31.1.1.3.1.5.16850947",
             "interval" : 60,
-            "datatype": "GAUGE"
+            "datatype": "GAUGE",
+            "metricname": "switch.temp.module.light2"
         }
        },
        "infos" : {

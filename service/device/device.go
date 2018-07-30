@@ -3,6 +3,8 @@ package device
 //Device interface, for example switch,firewall
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"github.com/SwitchCollector/core/scheduler"
 	"github.com/SwitchCollector/g"
@@ -211,6 +213,14 @@ func (e *Executer) Run(timestamp int64) {
 	}
 }
 
+func deepCopy(dst, src interface{}) error {
+	var buf bytes.Buffer
+	if err := gob.NewEncoder(&buf).Encode(src); err != nil {
+		return err
+	}
+	return gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(dst)
+}
+
 func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	var device MetricDevice
 	device.Ip = dev.Ip
@@ -220,25 +230,14 @@ func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	device.Type = dev.Type
 	device.Uuid = dev.Uuid
 
-	metrics := metricT.Metrics
-	if metrics == nil {
-		metrics = make(map[string]*g.Metric)
-	}
-
-	infos := metricT.Infos
-	if infos == nil {
-		infos = make(map[string]*g.Metric)
-	}
-
-	multiMetrics := metricT.MultiMetrics
-	if multiMetrics == nil {
-		multiMetrics = make(map[string]*g.Metric)
-	}
-
-	multiInfos := metricT.MultiInfos
-	if multiInfos == nil {
-		multiInfos = make(map[string]*g.Metric)
-	}
+	metrics := make(map[string]*g.Metric)
+	deepCopy(&metrics, metricT.Metrics)
+	infos := make(map[string]*g.Metric)
+	deepCopy(&infos, metricT.Infos)
+	multiMetrics := make(map[string]*g.Metric)
+	deepCopy(&multiMetrics, metricT.MultiMetrics)
+	multiInfos := make(map[string]*g.Metric)
+	deepCopy(&multiInfos, metricT.MultiInfos)
 
 	if dev.Extension.Enabled {
 		for key, value := range dev.Extension.Metrics {

@@ -40,6 +40,7 @@ type Executer struct {
 	Timeout    int    `json:"timeout"`
 	Name       string `json:"name"`
 	MetricType string `json:"metrictype"`
+	MetricName string `json:"metricname"`
 	Timestamp  int64  `json:"timestamp"`
 	Uuid       string `json:"uuid"`
 }
@@ -63,7 +64,7 @@ func (e *Executer) PingLatency() {
 func (e *Executer) saveToBackend(value interface{}) {
 	data := make([]map[string]interface{}, 0)
 
-	uuid, ip, name, metricType, dataType, timestamp, interval := e.Uuid, e.Ip, e.Name, e.MetricType, e.DataType, e.Timestamp, e.Interval
+	uuid, ip, metricName, metricType, dataType, timestamp, interval := e.Uuid, e.Ip, e.MetricName, e.MetricType, e.DataType, e.Timestamp, e.Interval
 	switch metricType {
 	case "metrics":
 		elem := make(map[string]interface{})
@@ -72,7 +73,7 @@ func (e *Executer) saveToBackend(value interface{}) {
 		} else {
 			elem["endpoint"] = uuid
 		}
-		elem["metric"] = name
+		elem["metric"] = metricName
 		elem["timestamp"] = timestamp
 		elem["step"] = interval
 		elem["counterType"] = dataType
@@ -89,7 +90,7 @@ func (e *Executer) saveToBackend(value interface{}) {
 			} else {
 				elem["endpoint"] = uuid
 			}
-			elem["metric"] = name
+			elem["metric"] = metricName
 			elem["timestamp"] = timestamp
 			elem["step"] = interval
 			elem["counterType"] = dataType
@@ -299,10 +300,6 @@ func (device *Device) InitTasks() {
 	}
 }
 
-func (device *Device) Update() {
-
-}
-
 func (device *Device) InitScheduler() {
 	for _, metricDevice := range device.tasks {
 		metricsL := map[string]map[string]*g.Metric{"metrics": metricDevice.Metrics,
@@ -322,6 +319,7 @@ func (device *Device) InitScheduler() {
 				executer.Timeout = metricDevice.Timeout
 				executer.Name = name
 				executer.MetricType = metricType
+				executer.MetricName = metric.MetricName
 				executer.Uuid = metricDevice.Uuid
 
 				device.scheduler.Queue[executer.Interval] = append(device.scheduler.Queue[executer.Interval], &executer)
@@ -332,10 +330,6 @@ func (device *Device) InitScheduler() {
 
 func (device *Device) Collect() {
 	device.scheduler.Scheduler()
-}
-
-func (device *Device) FlushBackend() {
-
 }
 
 func (device *Device) CleanStale() {

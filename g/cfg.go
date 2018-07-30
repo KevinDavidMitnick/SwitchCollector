@@ -43,9 +43,10 @@ type GlobalConfig struct {
 }
 
 type Metric struct {
-	Oid      string `json:"oid"`
-	Interval int64  `json:"interval"`
-	DataType string `json:"datatype"`
+	Oid        string `json:"oid"`
+	Interval   int64  `json:"interval"`
+	DataType   string `json:"datatype"`
+	MetricName string `json:"metricname"`
 }
 
 type MetricTemplate struct {

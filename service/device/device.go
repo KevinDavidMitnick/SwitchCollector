@@ -238,15 +238,17 @@ func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
 	device.Uuid = dev.Uuid
 
 	metrics := make(map[string]*g.Metric)
-	deepCopy(&metrics, metricT.Metrics)
 	infos := make(map[string]*g.Metric)
-	deepCopy(&infos, metricT.Infos)
 	multiMetrics := make(map[string]*g.Metric)
-	deepCopy(&multiMetrics, metricT.MultiMetrics)
 	multiInfos := make(map[string]*g.Metric)
-	deepCopy(&multiInfos, metricT.MultiInfos)
+	if metricT != nil {
+		deepCopy(&metrics, metricT.Metrics)
+		deepCopy(&infos, metricT.Infos)
+		deepCopy(&multiMetrics, metricT.MultiMetrics)
+		deepCopy(&multiInfos, metricT.MultiInfos)
+	}
 
-	if dev.Extension.Enabled {
+	if dev.Extension != nil && dev.Extension.Enabled {
 		for key, value := range dev.Extension.Metrics {
 			metrics[key] = value
 		}
@@ -383,37 +385,40 @@ func (device *Device) Diff(devices []*g.NetDevice) (incExecuter []*Executer, dec
 		}
 	}
 	for _, dev := range devices {
+		var flag bool = true
 		for _, objects := range device.scheduler.Queue {
-			var flag bool = true
 			for _, object := range objects {
 				if object.(*Executer).Uuid == dev.Uuid {
 					flag = false
 				}
 			}
-			if flag {
-				metricM := g.MetricT()
-				metricDevice := mergeMetrics(dev, metricM[dev.Type])
-				metricsL := map[string]map[string]*g.Metric{"metrics": metricDevice.Metrics,
-					"infos": metricDevice.Infos, "multimetrics": metricDevice.MultiMetrics, "multiinfos": metricDevice.MultiInfos}
-				for metricType, metrics := range metricsL {
-					for name, metric := range metrics {
-						var executer Executer
-						executer.Ip = metricDevice.Ip
-						executer.Community = metricDevice.Community
-						executer.Version = metricDevice.Version
-						executer.Interval = metricDevice.Interval
-						executer.Oid = metric.Oid
-						if metric.Interval > 0 {
-							executer.Interval = metric.Interval
-						}
-						executer.DataType = metric.DataType
-						executer.Timeout = metricDevice.Timeout
-						executer.Name = name
-						executer.MetricType = metricType
-						executer.MetricName = metric.MetricName
-						executer.Uuid = metricDevice.Uuid
-						incExecuter = append(incExecuter, &executer)
+		}
+		if flag {
+			metricM := g.MetricT()
+			if metricM[dev.Type] == nil {
+				break
+			}
+			metricDevice := mergeMetrics(dev, metricM[dev.Type])
+			metricsL := map[string]map[string]*g.Metric{"metrics": metricDevice.Metrics,
+				"infos": metricDevice.Infos, "multimetrics": metricDevice.MultiMetrics, "multiinfos": metricDevice.MultiInfos}
+			for metricType, metrics := range metricsL {
+				for name, metric := range metrics {
+					var executer Executer
+					executer.Ip = metricDevice.Ip
+					executer.Community = metricDevice.Community
+					executer.Version = metricDevice.Version
+					executer.Interval = metricDevice.Interval
+					executer.Oid = metric.Oid
+					if metric.Interval > 0 {
+						executer.Interval = metric.Interval
 					}
+					executer.DataType = metric.DataType
+					executer.Timeout = metricDevice.Timeout
+					executer.Name = name
+					executer.MetricType = metricType
+					executer.MetricName = metric.MetricName
+					executer.Uuid = metricDevice.Uuid
+					incExecuter = append(incExecuter, &executer)
 				}
 			}
 		}

@@ -5,7 +5,6 @@
    "verssion": "v2",
    "class" : "H3C",
    "type"  : "H3C_S6800-54QF",
-   "uuid" : "",
    "extension" : {
        "enabled" : true,
        "metrics" : {

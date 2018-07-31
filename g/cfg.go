@@ -196,7 +196,7 @@ func LoadNetDevices() {
 
 	files, e := listDir(dir)
 	if e != nil || len(files) == 0 {
-		log.Fatalln("netdevics dir load err...")
+		log.Println("netdevics dir load err...")
 	}
 
 	netDevs = make(map[string]*NetDevice)

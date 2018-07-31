@@ -15,8 +15,12 @@
     },
     "backend" :{
         "enabled" : true,
-        "addr" : "http://127.0.0.1:1988"
+        "addr" : "http://127.0.0.1:1988/v1/push"
+    },
+    "cmdb" : {
+        "enabled" : true,
+        "addr" : "http://10.21.1.225:8401/cmdb/internal/oresource?tname=Switch"
     },
     "expire" : 3600,
-    "interval": 10
+    "interval": 60
 }

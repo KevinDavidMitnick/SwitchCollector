@@ -5,6 +5,7 @@ package device
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"github.com/SwitchCollector/core/scheduler"
 	"github.com/SwitchCollector/g"
@@ -45,6 +46,12 @@ type Executer struct {
 	MetricName string `json:"metricname"`
 	Timestamp  int64  `json:"timestamp"`
 	Uuid       string `json:"uuid"`
+}
+
+type CmdbResponse struct {
+	Message string         `json:"message"`
+	Code    int            `json:"code"`
+	Data    []*g.NetDevice `json:"data"`
 }
 
 func (e *Executer) PingCheck() {
@@ -105,7 +112,7 @@ func (e *Executer) saveToBackend(value interface{}) {
 		}
 	}
 	if len(data) > 0 {
-		funcs.Send(g.Config().Backend.Addr, data)
+		funcs.PushToFalcon(g.Config().Backend.Addr, data)
 	}
 }
 
@@ -218,7 +225,7 @@ func deepCopy(dst, src interface{}) error {
 	if err := gob.NewEncoder(&buf).Encode(src); err != nil {
 		return err
 	}
-	return gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(dst)
+	return gob.NewDecoder(&buf).Decode(dst)
 }
 
 func mergeMetrics(dev *g.NetDevice, metricT *g.MetricTemplate) *MetricDevice {
@@ -303,6 +310,8 @@ func (device *Device) InitTasks() {
 }
 
 func (device *Device) InitScheduler() {
+	device.scheduler.Lock()
+	defer device.scheduler.Unlock()
 	for _, metricDevice := range device.tasks {
 		metricsL := map[string]map[string]*g.Metric{"metrics": metricDevice.Metrics,
 			"infos": metricDevice.Infos, "multimetrics": metricDevice.MultiMetrics, "multiinfos": metricDevice.MultiInfos}
@@ -346,5 +355,138 @@ func (device *Device) CleanStale() {
 			fmt.Println("finish start clean flow stale data")
 		}
 	}
+}
 
+func (device *Device) StopAll() {
+	device.scheduler.Lock()
+	defer device.scheduler.Unlock()
+
+	for key := range device.scheduler.Queue {
+		device.scheduler.Queue[key] = nil
+	}
+}
+
+func (device *Device) Diff(devices []*g.NetDevice) (incExecuter []*Executer, decExecuter []*Executer) {
+	device.scheduler.RLock()
+	defer device.scheduler.RUnlock()
+	for _, objects := range device.scheduler.Queue {
+		for _, object := range objects {
+			var flag bool = true
+			for _, dev := range devices {
+				if object.(*Executer).Uuid == dev.Uuid {
+					flag = false
+				}
+			}
+			if flag {
+				decExecuter = append(decExecuter, object.(*Executer))
+			}
+		}
+	}
+	for _, dev := range devices {
+		for _, objects := range device.scheduler.Queue {
+			var flag bool = true
+			for _, object := range objects {
+				if object.(*Executer).Uuid == dev.Uuid {
+					flag = false
+				}
+			}
+			if flag {
+				metricM := g.MetricT()
+				metricDevice := mergeMetrics(dev, metricM[dev.Type])
+				metricsL := map[string]map[string]*g.Metric{"metrics": metricDevice.Metrics,
+					"infos": metricDevice.Infos, "multimetrics": metricDevice.MultiMetrics, "multiinfos": metricDevice.MultiInfos}
+				for metricType, metrics := range metricsL {
+					for name, metric := range metrics {
+						var executer Executer
+						executer.Ip = metricDevice.Ip
+						executer.Community = metricDevice.Community
+						executer.Version = metricDevice.Version
+						executer.Interval = metricDevice.Interval
+						executer.Oid = metric.Oid
+						if metric.Interval > 0 {
+							executer.Interval = metric.Interval
+						}
+						executer.DataType = metric.DataType
+						executer.Timeout = metricDevice.Timeout
+						executer.Name = name
+						executer.MetricType = metricType
+						executer.MetricName = metric.MetricName
+						executer.Uuid = metricDevice.Uuid
+						incExecuter = append(incExecuter, &executer)
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func (device *Device) Increase(incExecuter []*Executer) {
+	device.scheduler.Lock()
+	defer device.scheduler.Unlock()
+
+	for _, executer := range incExecuter {
+		interval := executer.Interval
+		device.scheduler.Queue[interval] = append(device.scheduler.Queue[interval], executer)
+	}
+}
+
+func (device *Device) Decrease(decExecuter []*Executer) {
+	device.scheduler.Lock()
+	defer device.scheduler.Unlock()
+	uuids := make(map[int64][]string)
+	for _, executer := range decExecuter {
+		uuids[executer.Interval] = append(uuids[executer.Interval], executer.Uuid)
+	}
+	for interval := range uuids {
+		var objects []scheduler.Object
+		for _, object := range device.scheduler.Queue[interval] {
+			var flag bool = true
+			for _, uuid := range uuids[interval] {
+				if object.(*Executer).Uuid == uuid {
+					flag = false
+				}
+			}
+			if flag {
+				objects = append(objects, object)
+			}
+		}
+		device.scheduler.Queue[interval] = objects
+	}
+}
+
+func (device *Device) UpdateScheduler() {
+	if !g.Config().Cmdb.Enabled {
+		return
+	}
+
+	interval := time.Duration(g.Config().Interval)
+	ticker := time.NewTicker(interval * time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			fmt.Println("start update scheduler data")
+			var response CmdbResponse
+			cmdbUrl := g.Config().Cmdb.Addr
+			data, err := funcs.GetData(cmdbUrl)
+			if err != nil {
+				continue
+			}
+			err1 := json.NewDecoder(bytes.NewBuffer(data)).Decode(&response)
+			if err1 != nil {
+				continue
+			}
+			if response.Code != 0 || response.Message != "ok" {
+				continue
+			}
+			if len(response.Data) == 0 {
+				device.StopAll()
+				continue
+			}
+			incExecuter, decExecuter := device.Diff(response.Data)
+			device.Increase(incExecuter)
+			device.Decrease(decExecuter)
+			fmt.Println("finish update scheduler data")
+		}
+	}
 }

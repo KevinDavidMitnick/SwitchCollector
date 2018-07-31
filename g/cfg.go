@@ -32,12 +32,18 @@ type BackendConfig struct {
 	Addr    string `json:"addr"`
 }
 
+type CmdbConfig struct {
+	Enabled bool   `json:"enabled"`
+	Addr    string `json:"addr"`
+}
+
 type GlobalConfig struct {
 	Udp        *UdpConfig        `json:"udp"`
 	Http       *HttpConfig       `json:"http"`
 	Templates  *TemplatesConfig  `json:"templates"`
 	NetDevices *NetDevicesConfig `json:"netdevices"`
 	Backend    *BackendConfig    `json:"backend"`
+	Cmdb       *CmdbConfig       `json:"cmdb"`
 	Expire     int               `json:"expire"`
 	Interval   int64             `json:"interval"`
 }

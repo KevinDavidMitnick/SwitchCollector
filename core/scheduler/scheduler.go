@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -13,29 +14,31 @@ type Object interface {
 //Scheduler struct ,scheduler queue
 type Scheduler struct {
 	Queue map[int64][]Object `json:"queue"`
-}
-
-//runScheduler ,run scheduler after interval
-func (scheduler *Scheduler) run(interval int64, tasks []Object) {
-	for {
-		timer := time.NewTicker(time.Second * time.Duration(interval))
-		select {
-		case <-timer.C:
-			timestamp := time.Now().Unix()
-			fmt.Println("\n begin run:----------------------->")
-			for _, obj := range tasks {
-				go obj.Run(timestamp)
-			}
-		case <-time.After(time.Second * time.Duration(interval*2)):
-			fmt.Println("timeout for scheduler...")
-		}
-	}
+	sync.RWMutex
 }
 
 //Scheduler ,to run task
 func (scheduler *Scheduler) Scheduler() {
-	for interval, schedulers := range scheduler.Queue {
-		go scheduler.run(interval, schedulers)
+	scheduler.RLock()
+	defer scheduler.RUnlock()
+	for interval := range scheduler.Queue {
+		go func() {
+			for {
+				timer := time.NewTicker(time.Second * time.Duration(interval))
+				select {
+				case <-timer.C:
+					timestamp := time.Now().Unix()
+					if len(scheduler.Queue[interval]) == 0 {
+						break
+					}
+					for _, obj := range scheduler.Queue[interval] {
+						go obj.Run(timestamp)
+					}
+				case <-time.After(time.Second * time.Duration(interval*2)):
+					fmt.Println("timeout for scheduler...")
+				}
+			}
+		}()
 	}
 }
 

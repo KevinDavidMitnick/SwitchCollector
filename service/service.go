@@ -9,5 +9,6 @@ func CollectFlow() {
 	device.InitTasks()
 	device.InitScheduler()
 	device.Collect()
-	device.CleanStale()
+	go device.CleanStale()
+	go device.UpdateScheduler()
 }

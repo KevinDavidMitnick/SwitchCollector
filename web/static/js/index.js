@@ -364,6 +364,7 @@ function getChartsList(ip){
         $("#axislist").append("<div class='axiscontain' id='axis-li-"+i+"' class='axiscontain'></div>");
         var j = (i-1)*2;
         for(var k = (i-1)*2;k<i*2;k++){
+            if(k >= namelist.length) return;
             $("#axis-li-"+i).append("<div class='axis-item' id='axis-chart-"+k+"'>"+
                 "<div class='axis-title'>"+ namelist[k] +"</div>"+
                 "<div id='axis"+ namelist[k] +"' style='width:700px; height: 450px;'></div>"+
@@ -424,7 +425,7 @@ function Update_chart(ip,ids,i){
 
 //滚动折线图列表
 function AutoScroll_Charts(obj) {
-    if(!isscroll_port) return;
+    if(!isscroll_port || (portlists.length == 0) || (namelist.length == 0)) return;
     $(obj).find("#axislist:first").animate({
         marginLeft: "-720px"
     },

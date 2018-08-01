@@ -2,7 +2,7 @@
    "uuid": "c0e5ade4-6d58-40f6-bc35-554ae4abcd27",
    "ip" : "10.0.20.254:161",
    "community": "huayun.2017",
-   "verssion": "v2",
+   "version": "v2",
    "class" : "H3C",
    "type"  : "H3C_S5560-54C-EI",
    "extension" : {

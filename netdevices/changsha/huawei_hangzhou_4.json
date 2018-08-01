@@ -2,7 +2,7 @@
    "uuid": "09483592-61d0-4a59-838d-f59f6a7b2e8f",
    "ip" : "110.88.128.130:16106",
    "community": "chinac.com",
-   "version": "v2",
+   "version": "2c",
    "class" : "HUAWEI",
    "type"  : "HUAWEI_CE8860-4C-EI",
    "extension" : {

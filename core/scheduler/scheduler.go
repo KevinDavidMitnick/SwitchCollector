@@ -17,28 +17,34 @@ type Scheduler struct {
 	sync.RWMutex
 }
 
+//Run scheduler
+func (scheduler *Scheduler) Run(interval int64) {
+	for {
+		timer := time.NewTicker(time.Second * time.Duration(interval))
+		select {
+		case <-timer.C:
+			scheduler.RLock()
+			timestamp := time.Now().Unix()
+			if len(scheduler.Queue[interval]) == 0 {
+				scheduler.RUnlock()
+				break
+			}
+			for _, obj := range scheduler.Queue[interval] {
+				go obj.Run(timestamp)
+			}
+			scheduler.RUnlock()
+		case <-time.After(time.Second * time.Duration(interval*2)):
+			fmt.Println("timeout for scheduler...")
+		}
+	}
+}
+
 //Scheduler ,to run task
 func (scheduler *Scheduler) Scheduler() {
 	scheduler.RLock()
 	defer scheduler.RUnlock()
 	for interval := range scheduler.Queue {
-		go func() {
-			for {
-				timer := time.NewTicker(time.Second * time.Duration(interval))
-				select {
-				case <-timer.C:
-					timestamp := time.Now().Unix()
-					if len(scheduler.Queue[interval]) == 0 {
-						break
-					}
-					for _, obj := range scheduler.Queue[interval] {
-						go obj.Run(timestamp)
-					}
-				case <-time.After(time.Second * time.Duration(interval*2)):
-					fmt.Println("timeout for scheduler...")
-				}
-			}
-		}()
+		go scheduler.Run(interval)
 	}
 }
 

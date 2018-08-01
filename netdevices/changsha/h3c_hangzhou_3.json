@@ -2,7 +2,7 @@
    "uuid": "f58526d5-e2ee-46d1-91fe-c7ac9e09a7ec",
    "ip" : "117.48.207.2:16104",
    "community": "chinac.com",
-   "version": "v2",
+   "version": "2c",
    "class" : "H3C",
    "type"  : "H3C_S6800-54QF",
    "extension" : {

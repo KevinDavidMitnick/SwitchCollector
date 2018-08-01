@@ -19,8 +19,8 @@ type Scheduler struct {
 
 //Run scheduler
 func (scheduler *Scheduler) Run(interval int64) {
+	timer := time.NewTicker(time.Second * time.Duration(interval))
 	for {
-		timer := time.NewTicker(time.Second * time.Duration(interval))
 		select {
 		case <-timer.C:
 			scheduler.RLock()

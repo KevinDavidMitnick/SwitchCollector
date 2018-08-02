@@ -48,7 +48,7 @@ func (scheduler *Scheduler) Scheduler() {
 	}
 }
 
-//GetScheduler, get scheduler
+//GetScheduler , get scheduler
 func GetScheduler() *Scheduler {
 	var scheduler Scheduler
 	scheduler.Queue = make(map[int64][]Object)

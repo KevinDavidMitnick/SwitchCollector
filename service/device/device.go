@@ -430,7 +430,11 @@ func (device *Device) Increase(incExecuter []*Executer) {
 	device.scheduler.Lock()
 	defer device.scheduler.Unlock()
 
+	indexNameMap := g.GetIndexNameMap()
 	for _, executer := range incExecuter {
+		if indexNameMap[executer.Ip] == nil {
+			buildIndexNameMap(executer.Ip, executer.Community, executer.Version, executer.Timeout)
+		}
 		interval := executer.Interval
 		device.scheduler.Queue[interval] = append(device.scheduler.Queue[interval], executer)
 	}

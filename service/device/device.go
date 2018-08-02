@@ -499,7 +499,15 @@ func (device *Device) UpdateScheduler() {
 				device.StopAll()
 				continue
 			}
-			incExecuter, decExecuter := device.Diff(response.Data)
+			var devices []*g.NetDevice
+			for _, dev := range response.Data {
+				if dev.Ip == "" || dev.Community == "" || dev.Class == "" ||
+					dev.Type == "" || dev.Uuid == "" {
+					continue
+				}
+				devices = append(devices, dev)
+			}
+			incExecuter, decExecuter := device.Diff(devices)
 			device.Increase(incExecuter)
 			device.Decrease(decExecuter)
 			fmt.Println("finish update scheduler data")

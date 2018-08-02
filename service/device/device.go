@@ -371,12 +371,15 @@ func (device *Device) StopAll() {
 func (device *Device) Diff(devices []*g.NetDevice) (incExecuter []*Executer, decExecuter []*Executer) {
 	device.scheduler.RLock()
 	defer device.scheduler.RUnlock()
-	for _, objects := range device.scheduler.Queue {
-		for _, object := range objects {
+	for interval, objects := range device.scheduler.Queue {
+		for i, object := range objects {
 			var flag bool = true
 			for _, dev := range devices {
 				if object.(*Executer).Uuid == dev.Uuid {
 					flag = false
+					device.scheduler.Queue[interval][i].(*Executer).Ip = dev.Ip
+					device.scheduler.Queue[interval][i].(*Executer).Community = dev.Community
+					device.scheduler.Queue[interval][i].(*Executer).Version = dev.Version
 				}
 			}
 			if flag {
@@ -386,10 +389,13 @@ func (device *Device) Diff(devices []*g.NetDevice) (incExecuter []*Executer, dec
 	}
 	for _, dev := range devices {
 		var flag bool = true
-		for _, objects := range device.scheduler.Queue {
-			for _, object := range objects {
+		for interval, objects := range device.scheduler.Queue {
+			for i, object := range objects {
 				if object.(*Executer).Uuid == dev.Uuid {
 					flag = false
+					device.scheduler.Queue[interval][i].(*Executer).Ip = dev.Ip
+					device.scheduler.Queue[interval][i].(*Executer).Community = dev.Community
+					device.scheduler.Queue[interval][i].(*Executer).Version = dev.Version
 				}
 			}
 		}

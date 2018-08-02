@@ -431,12 +431,19 @@ func (device *Device) Increase(incExecuter []*Executer) {
 	defer device.scheduler.Unlock()
 
 	indexNameMap := g.GetIndexNameMap()
+	var newIntervals []int64
 	for _, executer := range incExecuter {
 		if indexNameMap[executer.Ip] == nil {
 			buildIndexNameMap(executer.Ip, executer.Community, executer.Version, executer.Timeout)
 		}
 		interval := executer.Interval
+		if len(device.scheduler.Queue[interval]) == 0 {
+			newIntervals = append(newIntervals, interval)
+		}
 		device.scheduler.Queue[interval] = append(device.scheduler.Queue[interval], executer)
+	}
+	for _, val := range newIntervals {
+		go device.scheduler.Run(val)
 	}
 }
 

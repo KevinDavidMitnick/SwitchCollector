@@ -54,6 +54,7 @@ func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {
 	result, err := querier.Interal.Get(oids)
 	if err != nil {
 		log.Println("Get oid value failed, err is: ", err, "oid is:", oid, "ip :", querier.Interal.Target, "port :", querier.Interal.Port)
+		return int64(0), nil
 	}
 
 	data := result.Variables[0]

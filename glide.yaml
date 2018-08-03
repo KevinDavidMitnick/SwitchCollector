@@ -1,6 +1,0 @@
-package: github.com/SwitchCollector
-import:
-- package: github.com/soniah/gosnmp
-  version: ~1.12.0
-- package: github.com/toolkits/file
-- package: github.com/toolkits/sys

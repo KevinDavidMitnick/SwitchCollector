@@ -19,6 +19,12 @@ func init() {
 	}
 
 	g.ParseConfig(*cfg)
+	if g.Config().Debug {
+		g.InitLog("debug")
+	} else {
+		g.InitLog("error")
+	}
+
 	g.LoadTemplatesConfig()
 	g.LoadNetDevices()
 }

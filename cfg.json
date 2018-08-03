@@ -21,6 +21,7 @@
         "enabled" : true,
         "addr" : "http://10.21.1.225:8401/cmdb/internal/oresource?tname=Switch"
     },
+    "debug" : true,
     "expire" : 3600,
     "interval": 60
 }

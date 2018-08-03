@@ -44,6 +44,7 @@ type GlobalConfig struct {
 	NetDevices *NetDevicesConfig `json:"netdevices"`
 	Backend    *BackendConfig    `json:"backend"`
 	Cmdb       *CmdbConfig       `json:"cmdb"`
+	Debug      bool              `json:"debug"`
 	Expire     int               `json:"expire"`
 	Interval   int64             `json:"interval"`
 }

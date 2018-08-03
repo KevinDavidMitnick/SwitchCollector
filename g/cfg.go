@@ -2,9 +2,9 @@ package g
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/toolkits/file"
 	"io/ioutil"
-	"log"
 	"os"
 	"sync"
 )

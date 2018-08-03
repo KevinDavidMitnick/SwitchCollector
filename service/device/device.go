@@ -6,10 +6,10 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
-	"fmt"
 	"github.com/SwitchCollector/core/scheduler"
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/service/funcs"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -204,7 +204,7 @@ func (e *Executer) CollectData() {
 			e.saveToBackend(value)
 		}
 	default:
-		fmt.Println("not right metric type:", e.MetricType)
+		log.Println("not right metric type:", e.MetricType)
 	}
 }
 
@@ -292,12 +292,12 @@ func buildIndexNameMap(ip string, community string, version string, timeout int)
 	defer querier.Close()
 	tempMap, err := querier.GetBulkMetricValue(".1.3.6.1.2.1.2.2.1.2")
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 	for key, value := range tempMap {
 		indexNameMap[ip][key] = value.(string)
 	}
-	//fmt.Println("map is:", indexNameMap)
+	//log.Println("map is:", indexNameMap)
 }
 
 func (device *Device) InitTasks() {
@@ -352,9 +352,9 @@ func (device *Device) CleanStale() {
 		select {
 		case <-ticker.C:
 			timestamp := time.Now().Unix() - int64(g.Config().Expire)
-			fmt.Println("start clean flow stale data")
+			log.Println("start clean flow stale data")
 			g.CleanAllStale(timestamp)
-			fmt.Println("finish start clean flow stale data")
+			log.Println("finish start clean flow stale data")
 		}
 	}
 }
@@ -487,7 +487,7 @@ func (device *Device) UpdateScheduler() {
 	for {
 		select {
 		case <-ticker.C:
-			fmt.Println("start update scheduler data")
+			log.Println("start update scheduler data")
 			var response CmdbResponse
 			cmdbUrl := g.Config().Cmdb.Addr
 			data, err := funcs.GetData(cmdbUrl)
@@ -516,7 +516,7 @@ func (device *Device) UpdateScheduler() {
 			incExecuter, decExecuter := device.Diff(devices)
 			device.Increase(incExecuter)
 			device.Decrease(decExecuter)
-			fmt.Println("finish update scheduler data")
+			log.Println("finish update scheduler data")
 		}
 	}
 }

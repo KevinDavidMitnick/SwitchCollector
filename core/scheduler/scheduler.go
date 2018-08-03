@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
@@ -34,7 +34,7 @@ func (scheduler *Scheduler) Run(interval int64) {
 			}
 			scheduler.RUnlock()
 		case <-time.After(time.Second * time.Duration(interval*2)):
-			fmt.Println("timeout for scheduler...")
+			log.Println("timeout for scheduler...")
 		}
 	}
 }

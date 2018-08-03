@@ -2,8 +2,8 @@ package funcs
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/soniah/gosnmp"
-	"log"
 	"strconv"
 	"strings"
 	"time"

@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/service/visit"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 

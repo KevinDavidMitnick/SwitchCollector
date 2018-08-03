@@ -2,9 +2,8 @@ package visit
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/SwitchCollector/g"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 	"time"
@@ -53,7 +52,7 @@ func (udp *UdpData) display() {
 	defer udp.RUnlock()
 
 	if data, err := json.Marshal(udp.Data); err == nil {
-		fmt.Println(string(data))
+		log.Println(string(data))
 	}
 }
 
@@ -78,7 +77,7 @@ func (udp *UdpData) search(expire int64) *VisitLog {
 func (udp *UdpData) cleanStaleData() {
 	udp.Lock()
 	defer udp.Unlock()
-	fmt.Println("start clean stale data.")
+	log.Println("start clean stale data.")
 	expire := g.Config().Expire
 	startTime := time.Now().Unix() - int64(expire)
 
@@ -122,8 +121,8 @@ func HandleUdpData(data []byte, size int) {
 	ip := strings.Split(ip_port, ":")[1]
 	VisitData.save(strings.TrimSpace(ip), timestamp)
 
-	//fmt.Println("recv data is:" + string(data))
-	//fmt.Println("visit data size is:", VisitData.size())
+	//log.Println("recv data is:" + string(data))
+	//log.Println("visit data size is:", VisitData.size())
 	//VisitData.display()
 }
 

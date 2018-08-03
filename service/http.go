@@ -6,6 +6,7 @@ import (
 	"github.com/SwitchCollector/service/visit"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	_ "net/http/pprof"
 	"strconv"
 	"strings"
 )

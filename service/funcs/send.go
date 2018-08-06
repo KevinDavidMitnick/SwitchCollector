@@ -2,18 +2,13 @@ package funcs
 
 import (
 	"bytes"
-	"encoding/json"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 )
 
-func PushToFalcon(addr string, data interface{}) {
-	buf, err := json.Marshal(data)
-	if err != nil || len(buf) == 0 {
-		log.Println("send json marshal err,or data len is 0 , data is:", data)
-		return
-	}
+func PushToFalcon(addr string, buf []byte) error {
 	log.Printf("send :%s,data :%s", addr, string(buf))
 	request, _ := http.NewRequest("POST", addr, bytes.NewBuffer(buf))
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -24,9 +19,10 @@ func PushToFalcon(addr string, data interface{}) {
 	if err == nil {
 		defer resp.Body.Close()
 		if resp.StatusCode/100 != 2 {
-			log.Println("reponse err")
+			return fmt.Errorf("reponse err")
 		}
 	}
+	return err
 }
 
 func GetData(addr string) ([]byte, error) {
@@ -40,7 +36,7 @@ func GetData(addr string) ([]byte, error) {
 	if err == nil {
 		defer resp.Body.Close()
 		if resp.StatusCode/100 != 2 {
-			log.Println("reponse err")
+			return nil, fmt.Errorf("reponse err")
 		}
 		return ioutil.ReadAll(resp.Body)
 	}

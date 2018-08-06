@@ -15,7 +15,8 @@
     },
     "backend" :{
         "enabled" : true,
-        "addr" : "http://127.0.0.1:1988/v1/push"
+        "addr" : "http://127.0.0.1:1988/v1/push",
+        "check": "http://127.0.0.1:1988/health"
     },
     "cmdb" : {
         "enabled" : true,

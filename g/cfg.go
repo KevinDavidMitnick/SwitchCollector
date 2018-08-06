@@ -30,6 +30,7 @@ type NetDevicesConfig struct {
 type BackendConfig struct {
 	Enabled bool   `json:"enabled"`
 	Addr    string `json:"addr"`
+	Check   string `json:"check"`
 }
 
 type CmdbConfig struct {

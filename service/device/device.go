@@ -7,6 +7,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"github.com/SwitchCollector/core/scheduler"
+	"github.com/SwitchCollector/core/store"
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/service/funcs"
 	log "github.com/sirupsen/logrus"
@@ -112,7 +113,17 @@ func (e *Executer) saveToBackend(value interface{}) {
 		}
 	}
 	if len(data) > 0 {
-		funcs.PushToFalcon(g.Config().Backend.Addr, data)
+		buf, err := json.Marshal(data)
+		if err != nil || len(buf) == 0 {
+			log.Println("send json marshal err,or data len is 0 , data is:", data)
+			return
+		}
+		if store.GetStoreStatus() {
+			funcs.PushToFalcon(g.Config().Backend.Addr, buf)
+		} else {
+			store := store.GetStore()
+			store.Update(buf)
+		}
 	}
 }
 
@@ -518,5 +529,32 @@ func (device *Device) UpdateScheduler() {
 			device.Decrease(decExecuter)
 			log.Println("finish update scheduler data")
 		}
+	}
+}
+
+func (device *Device) UpdateStoreStatus() {
+	_, err := funcs.GetData(g.Config().Backend.Addr)
+	if err == nil {
+		store.UpdateStoreStatus(true)
+	} else {
+		store.UpdateStoreStatus(false)
+	}
+}
+
+func (device *Device) FlushStore() {
+	if !g.Config().Backend.Enabled {
+		return
+	}
+	interval := time.Duration(g.Config().Interval)
+	for {
+		device.UpdateStoreStatus()
+		if store.GetStoreStatus() {
+			store := store.GetStore()
+			for data, err := store.Read(); err == nil; {
+				err = funcs.PushToFalcon(g.Config().Backend.Addr, data)
+			}
+			store.Close()
+		}
+		time.Sleep(interval * time.Second)
 	}
 }

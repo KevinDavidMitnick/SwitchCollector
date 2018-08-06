@@ -533,7 +533,7 @@ func (device *Device) UpdateScheduler() {
 }
 
 func (device *Device) UpdateStoreStatus() {
-	_, err := funcs.GetData(g.Config().Backend.Addr)
+	_, err := funcs.GetData(g.Config().Backend.Check)
 	if err == nil {
 		store.UpdateStoreStatus(true)
 	} else {

@@ -67,13 +67,13 @@ func itob(v int) []byte {
 
 func (s *DBStore) Read() {
 	s.db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte("switch"))
+		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
 		for key, value := c.First(); key != nil; key, value = c.Next() {
 			s.Data <- value
 		}
 		tx.DeleteBucket([]byte("switch"))
-		return err
+		return nil
 	})
 }
 

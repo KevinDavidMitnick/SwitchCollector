@@ -11,4 +11,5 @@ func CollectFlow() {
 	device.Collect()
 	go device.CleanStale()
 	go device.UpdateScheduler()
+	go device.FlushStore()
 }

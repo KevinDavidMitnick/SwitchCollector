@@ -18,9 +18,6 @@ func PushToFalcon(addr string, buf []byte) error {
 	resp, err := client.Do(request)
 	if err == nil {
 		defer resp.Body.Close()
-		if resp.StatusCode/100 != 2 {
-			return fmt.Errorf("reponse err")
-		}
 	}
 	return err
 }

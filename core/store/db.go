@@ -44,6 +44,7 @@ func (s *DBStore) Close() error {
 	var err error
 	if s.db != nil {
 		err = s.db.Close()
+		s.db = nil
 	}
 	return err
 }
@@ -74,7 +75,11 @@ func (s *DBStore) Read() ([]byte, error) {
 			return fmt.Errorf("read empty bucket")
 		}
 		data = value
-		c.Delete()
+		if err := c.Delete(); err == nil {
+			fmt.Println("delete,key:", string(key), "success!")
+		} else {
+			fmt.Println("delete,key:", string(key), "failure!")
+		}
 		return nil
 	})
 	return data, err

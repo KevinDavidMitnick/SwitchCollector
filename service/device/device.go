@@ -549,21 +549,11 @@ func (device *Device) FlushStore() {
 	s := store.GetStore()
 	defer s.Close()
 
-	go func() {
-		for {
-			device.UpdateStoreStatus()
-			if store.GetStoreStatus() {
-				s.Read()
-			}
-			time.Sleep(interval * time.Second)
-		}
-	}()
-
-	go func() {
-		for data := range s.GetData() {
-			time.Sleep(interval * time.Second / 2)
+	for {
+		device.UpdateStoreStatus()
+		for data := s.Read(); store.GetStoreStatus() && data != nil; data = s.Read() {
 			funcs.PushToFalcon(g.Config().Backend.Addr, data)
-			log.Println("in store,reading,data is:", string(data))
 		}
-	}()
+		time.Sleep(interval * time.Second)
+	}
 }

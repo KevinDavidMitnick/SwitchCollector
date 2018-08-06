@@ -9,17 +9,15 @@ import (
 //Store interface
 type Store interface {
 	Open() error
-	Read()
+	Read() []byte
 	Update(data []byte) error
 	Close() error
-	GetData() chan []byte
 }
 
 //DBStore...
 type DBStore struct {
 	Store
-	db   *bolt.DB
-	Data chan []byte
+	db *bolt.DB
 }
 
 var (
@@ -65,16 +63,18 @@ func itob(v int) []byte {
 	return b
 }
 
-func (s *DBStore) Read() {
+func (s *DBStore) Read() []byte {
+	var data []byte
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
-		for key, value := c.First(); key != nil; key, value = c.Next() {
-			s.Data <- value
+		key, value := c.First()
+		if key != nil {
+			data = value
 		}
-		tx.DeleteBucket([]byte("switch"))
-		return nil
+		return c.Delete()
 	})
+	return data
 }
 
 func GetStore() Store {
@@ -82,7 +82,6 @@ func GetStore() Store {
 	defer locker.Unlock()
 	if ds == nil {
 		ds = new(DBStore)
-		ds.Data = make(chan []byte)
 		ds.Open()
 	}
 	if ds.db == nil {
@@ -101,10 +100,4 @@ func UpdateStoreStatus(status bool) {
 	locker.Lock()
 	defer locker.Unlock()
 	storeSwitch = status
-}
-
-func (s *DBStore) GetData() chan []byte {
-	locker.Lock()
-	defer locker.Unlock()
-	return s.Data
 }

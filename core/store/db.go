@@ -69,7 +69,7 @@ func (s *DBStore) Read() {
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
-		for key, value := c.First(); key != nil; c.Next() {
+		for key, value := c.First(); key != nil; key, value = c.Next() {
 			s.Data <- value
 		}
 		tx.DeleteBucket([]byte("switch"))

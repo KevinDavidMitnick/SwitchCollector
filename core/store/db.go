@@ -92,6 +92,9 @@ func GetStore() Store {
 		ds = new(DBStore)
 		ds.Open()
 	}
+	if ds.db == nil {
+		ds.Open()
+	}
 	return ds
 }
 

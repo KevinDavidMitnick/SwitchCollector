@@ -550,7 +550,7 @@ func (device *Device) FlushStore() {
 		device.UpdateStoreStatus()
 		if store.GetStoreStatus() {
 			store := store.GetStore()
-			for data, err := store.Read(); err == nil; {
+			for data, err := store.Read(); err == nil && data != nil; {
 				err = funcs.PushToFalcon(g.Config().Backend.Addr, data)
 				log.Println("in store,reading,data is:", string(data))
 			}

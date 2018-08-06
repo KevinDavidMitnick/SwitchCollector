@@ -75,10 +75,10 @@ func (s *DBStore) Read() ([]byte, error) {
 			return fmt.Errorf("read empty bucket")
 		}
 		data = value
-		if err := c.Delete(); err == nil {
-			fmt.Println("delete,key:", string(key), "success!")
+		if err := bucket.Delete(key); err == nil {
+			fmt.Println("delete,value:", string(value), "success!")
 		} else {
-			fmt.Println("delete,key:", string(key), "failure!")
+			fmt.Println("delete,value:", string(value), "failure!")
 		}
 		return nil
 	})

@@ -2,7 +2,6 @@ package store
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/boltdb/bolt"
 	"sync"
 )
@@ -10,15 +9,17 @@ import (
 //Store interface
 type Store interface {
 	Open() error
-	Read() ([]byte, error)
+	Read()
 	Update(data []byte) error
 	Close() error
+	GetData() chan []byte
 }
 
 //DBStore...
 type DBStore struct {
 	Store
-	db *bolt.DB
+	db   *bolt.DB
+	Data chan []byte
 }
 
 var (
@@ -64,25 +65,16 @@ func itob(v int) []byte {
 	return b
 }
 
-func (s *DBStore) Read() ([]byte, error) {
-	var err error
-	var data []byte
-	err = s.db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("switch"))
+func (s *DBStore) Read() {
+	s.db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
-		key, value := c.First()
-		if key == nil {
-			return fmt.Errorf("read empty bucket")
+		for key, value := c.First(); key != nil; c.Next() {
+			s.Data <- value
 		}
-		data = value
-		if err := bucket.Delete(key); err == nil {
-			fmt.Println("delete,value:", string(value), "success!")
-		} else {
-			fmt.Println("delete,value:", string(value), "failure!")
-		}
-		return nil
+		tx.DeleteBucket([]byte("switch"))
+		return err
 	})
-	return data, err
 }
 
 func GetStore() Store {
@@ -90,6 +82,7 @@ func GetStore() Store {
 	defer locker.Unlock()
 	if ds == nil {
 		ds = new(DBStore)
+		ds.Data = make(chan []byte)
 		ds.Open()
 	}
 	if ds.db == nil {
@@ -108,4 +101,10 @@ func UpdateStoreStatus(status bool) {
 	locker.Lock()
 	defer locker.Unlock()
 	storeSwitch = status
+}
+
+func (s *DBStore) GetData() chan []byte {
+	locker.Lock()
+	defer locker.Unlock()
+	return s.Data
 }

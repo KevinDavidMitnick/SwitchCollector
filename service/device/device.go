@@ -546,16 +546,24 @@ func (device *Device) FlushStore() {
 		return
 	}
 	interval := time.Duration(g.Config().Interval)
-	for {
-		device.UpdateStoreStatus()
-		if store.GetStoreStatus() {
-			store := store.GetStore()
-			for data, err := store.Read(); err == nil && data != nil; {
-				err = funcs.PushToFalcon(g.Config().Backend.Addr, data)
-				log.Println("in store,reading,data is:", string(data))
+	s := store.GetStore()
+	defer s.Close()
+
+	go func() {
+		for {
+			device.UpdateStoreStatus()
+			if store.GetStoreStatus() {
+				s.Read()
 			}
-			store.Close()
+			time.Sleep(interval * time.Second)
 		}
-		time.Sleep(interval * time.Second)
-	}
+	}()
+
+	go func() {
+		for data := range s.GetData() {
+			time.Sleep(interval * time.Second / 2)
+			funcs.PushToFalcon(g.Config().Backend.Addr, data)
+			log.Println("in store,reading,data is:", string(data))
+		}
+	}()
 }

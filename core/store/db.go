@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/boltdb/bolt"
+	"os"
 	"sync"
 )
 
@@ -80,6 +81,7 @@ func (s *DBStore) Read() []byte {
 }
 
 func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
+	var flag bool = false
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
@@ -91,10 +93,16 @@ func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
 			}
 		}
 		if key, _ := c.First(); key == nil {
-			tx.DeleteBucket([]byte("switch"))
+			if err := tx.DeleteBucket([]byte("switch")); err == nil {
+				flag = true
+			}
 		}
 		return nil
 	})
+	if flag {
+		s.Close()
+		os.Remove("opsultra.db")
+	}
 }
 
 func GetStore() Store {

@@ -90,6 +90,9 @@ func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
 				}
 			}
 		}
+		if key, _ := c.First(); key == nil {
+			tx.DeleteBucket([]byte("switch"))
+		}
 		return nil
 	})
 }

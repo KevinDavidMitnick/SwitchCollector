@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"github.com/boltdb/bolt"
 	"sync"
 )
@@ -12,6 +13,7 @@ type Store interface {
 	Read() []byte
 	Update(data []byte) error
 	Close() error
+	CleanStale(timestamp int64, data []map[string]interface{})
 }
 
 //DBStore...
@@ -75,6 +77,21 @@ func (s *DBStore) Read() []byte {
 		return c.Delete()
 	})
 	return data
+}
+
+func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
+	s.db.Update(func(tx *bolt.Tx) error {
+		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
+		c := bucket.Cursor()
+		for key, value := c.First(); key != nil; key, value = c.Next() {
+			if err := json.Unmarshal(value, &data); err == nil {
+				if len(data) > 0 && data[0]["timestamp"].(int64) < timestamp {
+					c.Delete()
+				}
+			}
+		}
+		return nil
+	})
 }
 
 func GetStore() Store {

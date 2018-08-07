@@ -554,6 +554,9 @@ func (device *Device) FlushStore() {
 		for data := s.Read(); store.GetStoreStatus() && data != nil; data = s.Read() {
 			funcs.PushToFalcon(g.Config().Backend.Addr, data)
 		}
+		timestamp := time.Now().Unix() - int64(g.Config().Expire)
+		data := make([]map[string]interface{}, 0)
+		s.CleanStale(timestamp, data)
 		time.Sleep(interval * time.Second)
 	}
 }

@@ -546,10 +546,10 @@ func (device *Device) FlushStore() {
 		return
 	}
 	interval := time.Duration(g.Config().Interval)
-	s := store.GetStore()
-	defer s.Close()
 
 	for {
+		s := store.GetStore()
+		defer s.Close()
 		device.UpdateStoreStatus()
 		for data := s.Read(); store.GetStoreStatus() && data != nil; data = s.Read() {
 			funcs.PushToFalcon(g.Config().Backend.Addr, data)

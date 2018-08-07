@@ -546,9 +546,9 @@ func (device *Device) FlushStore() {
 		return
 	}
 	interval := time.Duration(g.Config().Interval)
-	queue := make(chan []byte, g.Config().Interval)
 
 	for {
+		queue := make(chan []byte, g.Config().Interval)
 		s := store.GetStore()
 		defer s.Close()
 		device.UpdateStoreStatus()

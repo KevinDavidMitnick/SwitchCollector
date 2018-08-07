@@ -46,7 +46,7 @@ type GlobalConfig struct {
 	Backend    *BackendConfig    `json:"backend"`
 	Cmdb       *CmdbConfig       `json:"cmdb"`
 	Debug      bool              `json:"debug"`
-	Expire     int               `json:"expire"`
+	Expire     int64             `json:"expire"`
 	Interval   int64             `json:"interval"`
 }
 
@@ -64,7 +64,7 @@ type MetricTemplate struct {
 	Infos        map[string]*Metric `json:"infos"`
 	MultiMetrics map[string]*Metric `json:"multimetrics"`
 	MultiInfos   map[string]*Metric `json:"multiinfos"`
-	Timeout      int                `json:"timeout"`
+	Timeout      int64              `json:"timeout"`
 	Interval     int64              `json:"interval"`
 }
 

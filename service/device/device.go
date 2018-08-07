@@ -24,7 +24,7 @@ type MetricDevice struct {
 	Infos        map[string]*g.Metric `json:"infos"`
 	MultiMetrics map[string]*g.Metric `json:"multimetrics"`
 	MultiInfos   map[string]*g.Metric `json:"multiinfos"`
-	Timeout      int                  `json:"timeout"`
+	Timeout      int64                `json:"timeout"`
 	Interval     int64                `json:"interval"`
 	Uuid         string               `json:"uuid"`
 }
@@ -41,7 +41,7 @@ type Executer struct {
 	Oid        string `json:"oid"`
 	Interval   int64  `json:"interval"`
 	DataType   string `json:"datatype"`
-	Timeout    int    `json:"timeout"`
+	Timeout    int64  `json:"timeout"`
 	Name       string `json:"name"`
 	MetricType string `json:"metrictype"`
 	MetricName string `json:"metricname"`
@@ -291,7 +291,7 @@ func GetDevice() *Device {
 	return &device
 }
 
-func buildIndexNameMap(ip string, community string, version string, timeout int) {
+func buildIndexNameMap(ip string, community string, version string, timeout int64) {
 	indexNameMap := g.GetIndexNameMap()
 
 	g.Locker.Lock()

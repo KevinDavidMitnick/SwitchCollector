@@ -85,7 +85,7 @@ func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
 		c := bucket.Cursor()
 		for key, value := c.First(); key != nil; key, value = c.Next() {
 			if err := json.Unmarshal(value, &data); err == nil {
-				if len(data) > 0 && data[0]["timestamp"].(int64) < timestamp {
+				if len(data) > 0 && data[0]["timestamp"].(float64) < float64(timestamp) {
 					c.Delete()
 				}
 			}

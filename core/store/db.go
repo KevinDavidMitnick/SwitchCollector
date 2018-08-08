@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"os"
 	"sync"
+	"time"
 )
 
 //Store interface
@@ -60,7 +61,7 @@ func (s *DBStore) Update(data []byte) error {
 	var err error
 	err = s.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("switch"))
-		id, _ := bucket.NextSequence()
+		id := time.Now().Unix()
 		return bucket.Put(itob(int(id)), data)
 	})
 	return err

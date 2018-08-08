@@ -21,6 +21,7 @@ type Store interface {
 type DBStore struct {
 	Store
 	db *bolt.DB
+	sync.RWMutex
 }
 
 var (
@@ -31,6 +32,8 @@ var (
 
 //Open...
 func (s *DBStore) Open() error {
+	s.Lock()
+	defer s.Unlock()
 	var err error
 	if s.db == nil {
 		s.db, err = bolt.Open("opsultra.db", 0600, nil)
@@ -43,6 +46,8 @@ func (s *DBStore) Open() error {
 }
 
 func (s *DBStore) Close() error {
+	s.Lock()
+	defer s.Unlock()
 	var err error
 	if s.db != nil {
 		err = s.db.Close()
@@ -52,6 +57,8 @@ func (s *DBStore) Close() error {
 }
 
 func (s *DBStore) Update(data []byte) error {
+	s.Lock()
+	defer s.Unlock()
 	var err error
 	err = s.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("switch"))
@@ -67,6 +74,8 @@ func itob(v int) []byte {
 }
 
 func (s *DBStore) Read() []byte {
+	s.Lock()
+	defer s.Unlock()
 	var data []byte
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
@@ -82,6 +91,8 @@ func (s *DBStore) Read() []byte {
 }
 
 func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
+	s.Lock()
+	defer s.Unlock()
 	var flag bool = false
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))

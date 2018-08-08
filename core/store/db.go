@@ -74,8 +74,9 @@ func (s *DBStore) Read() []byte {
 		key, value := c.First()
 		if key != nil {
 			data = value
+			return c.Delete()
 		}
-		return c.Delete()
+		return nil
 	})
 	return data
 }
@@ -109,7 +110,7 @@ func GetStore() Store {
 	locker.Lock()
 	defer locker.Unlock()
 	if ds == nil {
-		ds = new(DBStore)
+		ds = &DBStore{}
 		ds.Open()
 	}
 	if ds.db == nil {

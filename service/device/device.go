@@ -551,7 +551,7 @@ func (device *Device) FlushStore() {
 	for {
 		timestamp := time.Now().Unix() - int64(g.Config().Expire)
 		data := make([]map[string]interface{}, 0)
-		queue := make(chan []byte, g.Config().Interval)
+		queue := make(chan string, g.Config().Interval)
 		s.CleanStale(timestamp, data)
 		s = store.GetStore()
 		device.UpdateStoreStatus()
@@ -560,14 +560,14 @@ func (device *Device) FlushStore() {
 			for {
 				select {
 				case data := <-queue:
-					if data == nil {
+					if data == "" {
 						break
 					}
-					funcs.PushToFalcon(g.Config().Backend.Addr, data)
+					funcs.PushToFalcon(g.Config().Backend.Addr, []byte(data))
 				}
 			}
 		}()
-		for data := s.Read(); store.GetStoreStatus() && data != nil; data = s.Read() {
+		for data := s.Read(); store.GetStoreStatus() && data != ""; data = s.Read() {
 			queue <- data
 		}
 		close(queue)

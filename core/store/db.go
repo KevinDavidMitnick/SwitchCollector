@@ -12,7 +12,7 @@ import (
 //Store interface
 type Store interface {
 	Open() error
-	Read() []byte
+	Read() string
 	Update(data []byte) error
 	Close() error
 	CleanStale(timestamp int64, data []map[string]interface{})
@@ -72,16 +72,16 @@ func itob(v int) []byte {
 	return b
 }
 
-func (s *DBStore) Read() []byte {
+func (s *DBStore) Read() string {
 	s.Lock()
 	defer s.Unlock()
-	var data []byte
+	var data string
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
 		key, value := c.First()
 		if key != nil {
-			data = value
+			data = string(value)
 			return c.Delete()
 		}
 		return nil

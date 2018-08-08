@@ -46,8 +46,6 @@ func (s *DBStore) Open() error {
 }
 
 func (s *DBStore) Close() error {
-	s.Lock()
-	defer s.Unlock()
 	var err error
 	if s.db != nil {
 		err = s.db.Close()
@@ -105,9 +103,7 @@ func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
 			}
 		}
 		if key, _ := c.First(); key == nil {
-			if err := tx.DeleteBucket([]byte("switch")); err == nil {
-				flag = true
-			}
+			flag = true
 		}
 		return nil
 	})

@@ -549,7 +549,10 @@ func (device *Device) FlushStore() {
 	s := store.GetStore()
 	defer s.Close()
 	for {
+		timestamp := time.Now().Unix() - int64(g.Config().Expire)
+		data := make([]map[string]interface{}, 0)
 		queue := make(chan []byte, g.Config().Interval)
+		s.CleanStale(timestamp, data)
 		s = store.GetStore()
 		device.UpdateStoreStatus()
 
@@ -566,9 +569,6 @@ func (device *Device) FlushStore() {
 			queue <- data
 		}
 		close(queue)
-		timestamp := time.Now().Unix() - int64(g.Config().Expire)
-		data := make([]map[string]interface{}, 0)
-		s.CleanStale(timestamp, data)
 		time.Sleep(interval * time.Second)
 	}
 }

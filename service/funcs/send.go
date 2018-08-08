@@ -9,7 +9,7 @@ import (
 )
 
 func PushToFalcon(addr string, buf []byte) error {
-	log.Printf("send :%s,data :%s", addr, string(buf))
+	log.Printf("send :%s,data :%s", addr, bytes.NewBuffer(buf).String())
 	request, _ := http.NewRequest("POST", addr, bytes.NewBuffer(buf))
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	request.Header.Set("TIMEOUT", "10")

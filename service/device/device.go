@@ -558,11 +558,13 @@ func (device *Device) FlushStore() {
 
 		go func() {
 			for {
-				data := <-queue
-				if data == nil {
-					break
+				select {
+				case data := <-queue:
+					if data == nil {
+						break
+					}
+					funcs.PushToFalcon(g.Config().Backend.Addr, data)
 				}
-				funcs.PushToFalcon(g.Config().Backend.Addr, data)
 			}
 		}()
 		for data := s.Read(); store.GetStoreStatus() && data != nil; data = s.Read() {

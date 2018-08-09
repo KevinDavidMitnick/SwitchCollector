@@ -6,7 +6,6 @@ import (
 	"github.com/boltdb/bolt"
 	"os"
 	"sync"
-	"time"
 )
 
 //Store interface
@@ -61,7 +60,7 @@ func (s *DBStore) Update(data []byte) error {
 	var err error
 	err = s.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("switch"))
-		id := time.Now().Unix()
+		id, _ := bucket.NextSequence()
 		return bucket.Put(itob(int(id)), data)
 	})
 	return err
@@ -92,7 +91,7 @@ func (s *DBStore) Read() string {
 func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
 	s.Lock()
 	defer s.Unlock()
-	var flag bool = false
+	var flag bool = true
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
@@ -103,8 +102,8 @@ func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
 				}
 			}
 		}
-		if key, _ := c.First(); key == nil {
-			flag = true
+		if key, _ := bucket.Cursor().First(); key != nil {
+			flag = false
 		}
 		return nil
 	})

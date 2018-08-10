@@ -4,25 +4,25 @@
     "metrics" : {
         "cpu使用率(%)"  : {
             "oid" : ".1.3.6.1.4.1.25506.2.6.1.1.1.1.6.212",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE",
             "metricname": "switch.cpu.used.percent"
         },
         "内存使用率(%)" : {
             "oid" : ".1.3.6.1.4.1.25506.2.6.1.1.1.1.8.212",
-            "interval": 10,
+            "interval": 60,
             "datatype": "GAUGE",
             "metricname": "switch.mem.used.percent"
         },
         "ping检测(0/1)": {
             "oid" : "ping_check",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE",
             "metricname": "switch.ping.alive"
         },
         "ping延时(ms)"  : {
             "oid" : "ping_latency",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE",
             "metricname": "switch.ping.latency"
         }
@@ -30,30 +30,30 @@
     "infos" : {
         "系统名称" : {
             "oid" : ".1.3.6.1.2.1.1.5.0",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE"
         },
         "系统描述" : {
             "oid" : ".1.3.6.1.2.1.1.1.0",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE"
         },
         "网络接口数" : {
             "oid" : ".1.3.6.1.2.1.2.1.0",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE"
         }
     },
     "multimetrics":{
         "端口发送速率(字节/秒)" : {
             "oid" : ".1.3.6.1.2.1.2.2.1.16",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "COUNTER",
             "metricname": "switch.out.bytes"
         },
         "端口接收速率(字节/秒)" : {
             "oid" : ".1.3.6.1.2.1.2.2.1.10",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "COUNTER",
             "metricname": "switch.in.bytes"
         }
@@ -61,15 +61,15 @@
     "multiinfos":{
         "端口状态(1/2)" : {
             "oid" : ".1.3.6.1.2.1.2.2.1.8",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE"
         },
         "端口描述" : {
             "oid" : ".1.3.6.1.2.1.2.2.1.2",
-            "interval" : 10,
+            "interval" : 60,
             "datatype": "GAUGE"
         }
     },
-   "timeout": 5,
-   "interval": 10
+   "timeout": 60,
+   "interval": 60
 }

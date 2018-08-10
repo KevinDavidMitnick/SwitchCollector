@@ -563,7 +563,7 @@ func (device *Device) FlushStore() {
 					if data == "" {
 						break
 					}
-					funcs.PushToFalcon(g.Config().Backend.Addr, []byte(data))
+					funcs.PushToFalcon(g.Config().Backend.Backup, []byte(data))
 				}
 			}
 		}()

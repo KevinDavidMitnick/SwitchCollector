@@ -30,6 +30,7 @@ type NetDevicesConfig struct {
 type BackendConfig struct {
 	Enabled bool   `json:"enabled"`
 	Addr    string `json:"addr"`
+	Backup  string `json:"backup"`
 	Check   string `json:"check"`
 }
 

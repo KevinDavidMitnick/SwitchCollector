@@ -15,8 +15,9 @@
     },
     "backend" :{
         "enabled" : true,
-        "addr" : "http://10.21.1.225:1988/v1/push",
-        "check": "http://10.21.1.225:1988/health"
+        "addr" : "http://127.0.0.1:1988/v1/push",
+        "backup": "http://10.21.1.225:16060/graph/push",
+        "check": "http://10.21.1.225:16060/health"
     },
     "cmdb" : {
         "enabled" : true,

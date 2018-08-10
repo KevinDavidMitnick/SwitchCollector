@@ -39,7 +39,9 @@ func GetQuerier(ip string, community string, version string, timeout int64) *Que
 }
 
 func (querier *QueryExecuter) Close() {
-	querier.Interal.Conn.Close()
+	if querier.Interal.Conn != nil {
+		querier.Interal.Conn.Close()
+	}
 }
 
 func (querier *QueryExecuter) GetMetricValue(oid string) (interface{}, error) {

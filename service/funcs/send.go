@@ -6,15 +6,17 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func PushToFalcon(addr string, buf []byte) error {
 	log.Printf("send :%s,data :%s", addr, bytes.NewBuffer(buf).String())
 	request, _ := http.NewRequest("POST", addr, bytes.NewBuffer(buf))
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	request.Header.Set("TIMEOUT", "10")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
 	resp, err := client.Do(request)
 	if err == nil {
 		defer resp.Body.Close()
@@ -26,9 +28,10 @@ func GetData(addr string) ([]byte, error) {
 	log.Printf("send :%s", addr)
 	request, _ := http.NewRequest("GET", addr, nil)
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	request.Header.Set("TIMEOUT", "10")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
 	resp, err := client.Do(request)
 	if err == nil {
 		defer resp.Body.Close()

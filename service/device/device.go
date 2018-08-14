@@ -119,7 +119,7 @@ func (e *Executer) saveToBackend(value interface{}) {
 			return
 		}
 		if store.GetStoreStatus() {
-			funcs.PushToFalcon(g.Config().Backend.Addr, buf)
+			funcs.SubmitData(g.Config().Backend.Addr, buf, "POST")
 		} else {
 			store := store.GetStore()
 			store.Update(buf)
@@ -563,7 +563,7 @@ func (device *Device) FlushStore() {
 					if data == "" {
 						break
 					}
-					funcs.PushToFalcon(g.Config().Backend.Backup, []byte(data))
+					funcs.SubmitData(g.Config().Backend.Backup, []byte(data), "POST")
 				}
 			}
 		}()

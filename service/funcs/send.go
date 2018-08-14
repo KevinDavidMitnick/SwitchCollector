@@ -2,11 +2,8 @@ package funcs
 
 import (
 	"bytes"
-	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 // GetData from url,use method get

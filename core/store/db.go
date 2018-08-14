@@ -14,7 +14,7 @@ type Store interface {
 	Read() string
 	Update(data []byte) error
 	Close() error
-	CleanStale(timestamp int64, data []map[string]interface{})
+	CleanStale(timestamp int64)
 }
 
 //DBStore...
@@ -88,10 +88,11 @@ func (s *DBStore) Read() string {
 	return data
 }
 
-func (s *DBStore) CleanStale(timestamp int64, data []map[string]interface{}) {
+func (s *DBStore) CleanStale(timestamp int64) {
 	s.Lock()
 	defer s.Unlock()
 	var flag bool = true
+	data := make([]map[string]interface{}, 0)
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()

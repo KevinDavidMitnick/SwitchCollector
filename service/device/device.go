@@ -533,6 +533,21 @@ func (device *Device) UpdateScheduler() {
 		}
 	}
 }
+func (device *Device) updateStoreStatus() {
+	ticker := time.NewTicker(time.Duration(g.Config().Interval) * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			_, err := funcs.GetData(g.Config().Backend.Check)
+			if err == nil {
+				store.UpdateStoreStatus(true)
+			} else {
+				store.UpdateStoreStatus(false)
+			}
+		}
+	}
+}
 
 func (device *Device) consumeStore(queue chan string) {
 	for {
@@ -575,6 +590,7 @@ func (device *Device) FlushStore() {
 	if !g.Config().Backend.Enabled {
 		return
 	}
+	go device.updateStoreStatus()
 	queue := make(chan string, g.Config().Interval)
 	go device.eatStore(queue)
 	go device.consumeStore(queue)

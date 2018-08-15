@@ -359,6 +359,7 @@ func (device *Device) Collect() {
 func (device *Device) CleanStale() {
 	expire := time.Duration(g.Config().Expire)
 	ticker := time.NewTicker(expire * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
@@ -495,6 +496,7 @@ func (device *Device) UpdateScheduler() {
 
 	interval := time.Duration(g.Config().Interval)
 	ticker := time.NewTicker(interval * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
@@ -543,6 +545,7 @@ func (device *Device) consumeStore(queue chan string) {
 
 func (device *Device) cleanStale() {
 	ticker := time.NewTicker(time.Duration(g.Config().Expire) * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
@@ -555,6 +558,7 @@ func (device *Device) cleanStale() {
 
 func (device *Device) eatStore(queue chan string) {
 	ticker := time.NewTicker(time.Duration(g.Config().Interval) * time.Second)
+	defer ticker.Stop()
 
 	for {
 		select {

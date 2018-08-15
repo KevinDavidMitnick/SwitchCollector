@@ -27,7 +27,7 @@ type DBStore struct {
 var (
 	locker      sync.RWMutex
 	ds          *DBStore
-	storeSwitch bool
+	storeSwitch bool = true
 )
 
 //Open...

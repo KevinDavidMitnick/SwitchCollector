@@ -9,6 +9,7 @@ import (
 
 // 生成 CPU 报告
 func cpuProfile() {
+	os.Remove("cpu.prof")
 	f, err := os.OpenFile("cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal(err)
@@ -25,6 +26,7 @@ func cpuProfile() {
 
 // 生成堆内存报告
 func heapProfile() {
+	os.Remove("heap.prof")
 	f, err := os.OpenFile("heap.prof", os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal(err)

@@ -21,7 +21,6 @@ func init() {
 	g.ParseConfig(*cfg)
 	if g.Config().Debug {
 		g.InitLog("debug")
-		go g.DebugReport()
 	} else {
 		g.InitLog("error")
 	}
@@ -37,6 +36,10 @@ func main() {
 	}
 	if g.Config().Udp.Enabled {
 		go service.StartUdpServ()
+	}
+
+	if g.Config().Debug {
+		g.DebugReport()
 	}
 
 	select {}

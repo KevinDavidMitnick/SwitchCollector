@@ -43,7 +43,6 @@ func DebugReport() {
 	for {
 		cpuProfile()
 		heapProfile()
-
-		time.Sleep(time.Duration(Config().Expire) * time.Second)
+		time.Sleep(time.Duration(Config().Interval) * time.Second)
 	}
 }

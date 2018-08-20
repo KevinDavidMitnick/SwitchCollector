@@ -13,10 +13,16 @@
     "netdevices" : {
         "dir": "./netdevices"
     },
+    "transfer": {
+        "enabled": true,
+        "addrs": [
+            "10.21.1.225:18433"
+        ],
+        "interval": 60,
+        "timeout": 1000
+    },
     "backend" :{
         "enabled" : true,
-        "addr" : "http://127.0.0.1:1988/v1/push",
-        "backup": "http://10.21.1.225:16060/graph/push",
         "check": "http://10.21.1.225:16060/health"
     },
     "cmdb" : {

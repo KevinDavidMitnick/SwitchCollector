@@ -10,6 +10,7 @@ import (
 	"github.com/SwitchCollector/core/store"
 	"github.com/SwitchCollector/g"
 	"github.com/SwitchCollector/service/funcs"
+	"github.com/open-falcon/falcon-plus/common/model"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -72,7 +73,7 @@ func (e *Executer) PingLatency() {
 }
 
 func (e *Executer) saveToBackend(value interface{}) {
-	data := make([]map[string]interface{}, 0)
+	var data []*model.MetricValue
 
 	uuid, ip, metricName, metricType, dataType, timestamp, interval := e.Uuid, e.Ip, e.MetricName, e.MetricType, e.DataType, e.Timestamp, e.Interval
 	if metricName == "" {
@@ -80,35 +81,35 @@ func (e *Executer) saveToBackend(value interface{}) {
 	}
 	switch metricType {
 	case "metrics":
-		elem := make(map[string]interface{})
+		elem := new(model.MetricValue)
 		if uuid == "" {
-			elem["endpoint"] = ip
+			elem.Endpoint = ip
 		} else {
-			elem["endpoint"] = uuid
+			elem.Endpoint = uuid
 		}
-		elem["metric"] = metricName
-		elem["timestamp"] = timestamp
-		elem["step"] = interval
-		elem["counterType"] = dataType
-		elem["tags"] = ""
-		elem["value"] = value
+		elem.Metric = metricName
+		elem.Timestamp = timestamp
+		elem.Step = interval
+		elem.Type = dataType
+		elem.Tags = ""
+		elem.Value = value
 		data = append(data, elem)
 	case "multimetrics":
 		indexNameMap := g.GetIndexNameMap()
 		for k, v := range value.(map[string]interface{}) {
 			interfaceName := indexNameMap[ip][k]
-			elem := make(map[string]interface{})
+			elem := new(model.MetricValue)
 			if uuid == "" {
-				elem["endpoint"] = ip
+				elem.Endpoint = ip
 			} else {
-				elem["endpoint"] = uuid
+				elem.Endpoint = uuid
 			}
-			elem["metric"] = metricName
-			elem["timestamp"] = timestamp
-			elem["step"] = interval
-			elem["counterType"] = dataType
-			elem["tags"] = "iface=" + interfaceName
-			elem["value"] = v
+			elem.Metric = metricName
+			elem.Timestamp = timestamp
+			elem.Step = interval
+			elem.Type = dataType
+			elem.Tags = "iface=" + interfaceName
+			elem.Value = v
 			data = append(data, elem)
 		}
 	}
@@ -118,12 +119,8 @@ func (e *Executer) saveToBackend(value interface{}) {
 			log.Println("send json marshal err,or data len is 0 , data is:", data)
 			return
 		}
-		if store.GetStoreStatus() {
-			funcs.SubmitData(g.Config().Backend.Addr, buf, "POST")
-		} else {
-			store := store.GetStore()
-			store.Update(buf)
-		}
+		store := store.GetStore()
+		store.Update(buf)
 	}
 }
 
@@ -534,18 +531,11 @@ func (device *Device) UpdateScheduler() {
 	}
 }
 func (device *Device) updateStoreStatus() {
-	ticker := time.NewTicker(time.Duration(g.Config().Interval) * time.Second)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			_, err := funcs.GetData(g.Config().Backend.Check)
-			if err == nil {
-				store.UpdateStoreStatus(true)
-			} else {
-				store.UpdateStoreStatus(false)
-			}
-		}
+	_, err := funcs.GetData(g.Config().Backend.Check)
+	if err == nil {
+		store.UpdateStoreStatus(true)
+	} else {
+		store.UpdateStoreStatus(false)
 	}
 }
 
@@ -553,36 +543,33 @@ func (device *Device) consumeStore(queue chan string) {
 	for {
 		select {
 		case data := <-queue:
-			funcs.SubmitData(g.Config().Backend.Backup, []byte(data), "POST")
+			var mvs []*model.MetricValue
+			if err := json.Unmarshal([]byte(data), &mvs); err == nil && g.Config().Transfer.Enabled {
+				g.SendToTransfer(mvs)
+			}
 		}
 	}
 }
 
 func (device *Device) cleanStale() {
-	ticker := time.NewTicker(time.Duration(g.Config().Expire) * time.Second)
-	defer ticker.Stop()
 	for {
-		select {
-		case <-ticker.C:
-			s := store.GetStore()
-			timestamp := time.Now().Unix() - int64(g.Config().Expire)
-			s.CleanStale(timestamp)
-		}
+		s := store.GetStore()
+		timestamp := time.Now().Unix() - int64(g.Config().Expire)
+		s.CleanStale(timestamp)
+		time.Sleep(time.Duration(g.Config().Expire) * time.Second)
 	}
 }
 
 func (device *Device) eatStore(queue chan string) {
-	ticker := time.NewTicker(time.Duration(g.Config().Interval) * time.Second)
-	defer ticker.Stop()
-
 	for {
-		select {
-		case <-ticker.C:
-			s := store.GetStore()
-			for data := s.Read(); store.GetStoreStatus() && data != ""; data = s.Read() {
+		s := store.GetStore()
+		device.updateStoreStatus()
+		if store.GetStoreStatus() {
+			for data := s.Read(); data != ""; data = s.Read() {
 				queue <- data
 			}
 		}
+		time.Sleep(time.Second)
 	}
 }
 
@@ -590,8 +577,7 @@ func (device *Device) FlushStore() {
 	if !g.Config().Backend.Enabled {
 		return
 	}
-	go device.updateStoreStatus()
-	queue := make(chan string, g.Config().Interval)
+	queue := make(chan string, g.Config().Transfer.Interval)
 	go device.eatStore(queue)
 	go device.consumeStore(queue)
 	go device.cleanStale()

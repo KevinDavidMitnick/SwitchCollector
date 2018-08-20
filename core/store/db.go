@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"github.com/boltdb/bolt"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"sync"
 )
@@ -45,6 +46,7 @@ func (s *DBStore) Open() error {
 	return err
 }
 
+// should never lock,because in lock.
 func (s *DBStore) Close() error {
 	var err error
 	if s.db != nil {
@@ -58,9 +60,15 @@ func (s *DBStore) Update(data []byte) error {
 	s.Lock()
 	defer s.Unlock()
 	var err error
+	if s.db == nil {
+		if s.db, err = bolt.Open("opsultra.db", 0600, nil); err != nil {
+			return err
+		}
+	}
 	err = s.db.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("switch"))
+		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		id, _ := bucket.NextSequence()
+		log.Infoln("update, kye is:", id, "data is:", string(data))
 		return bucket.Put(itob(int(id)), data)
 	})
 	return err
@@ -75,12 +83,20 @@ func (s *DBStore) Read() string {
 	s.Lock()
 	defer s.Unlock()
 	var data string
+
+	var err error
+	if s.db == nil {
+		if s.db, err = bolt.Open("opsultra.db", 0600, nil); err != nil {
+			return ""
+		}
+	}
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()
 		key, value := c.First()
 		if key != nil {
 			data = string(value)
+			log.Infoln("read, kye is:", binary.BigEndian.Uint64(key), "data is:", data)
 			return c.Delete()
 		}
 		return nil
@@ -92,7 +108,13 @@ func (s *DBStore) CleanStale(timestamp int64) {
 	s.Lock()
 	defer s.Unlock()
 	var flag bool = true
+	var err error
 	data := make([]map[string]interface{}, 0)
+	if s.db == nil {
+		if s.db, err = bolt.Open("opsultra.db", 0600, nil); err != nil {
+			return
+		}
+	}
 	s.db.Update(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte("switch"))
 		c := bucket.Cursor()

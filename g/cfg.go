@@ -27,10 +27,15 @@ type NetDevicesConfig struct {
 	Dir string `json:"dir"`
 }
 
+type TransferConfig struct {
+	Enabled  bool     `json:"enabled"`
+	Addrs    []string `json:"addrs"`
+	Interval int      `json:"interval"`
+	Timeout  int      `json:"timeout"`
+}
+
 type BackendConfig struct {
 	Enabled bool   `json:"enabled"`
-	Addr    string `json:"addr"`
-	Backup  string `json:"backup"`
 	Check   string `json:"check"`
 }
 
@@ -49,6 +54,7 @@ type GlobalConfig struct {
 	Debug      bool              `json:"debug"`
 	Expire     int64             `json:"expire"`
 	Interval   int64             `json:"interval"`
+	Transfer   *TransferConfig   `json:"transfer"`
 }
 
 type Metric struct {

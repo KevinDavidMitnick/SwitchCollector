@@ -578,7 +578,7 @@ func (device *Device) FlushStore() {
 		return
 	}
 	queue := make(chan string, g.Config().Transfer.Interval)
+	go device.cleanStale()
 	go device.eatStore(queue)
 	go device.consumeStore(queue)
-	go device.cleanStale()
 }

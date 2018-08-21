@@ -4,8 +4,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"runtime/pprof"
+	"sync"
 	"time"
 )
+
+var wg sync.WaitGroup
 
 // 生成 CPU 报告
 func cpuProfile() {
@@ -22,6 +25,7 @@ func cpuProfile() {
 
 	time.Sleep(300 * time.Second)
 	log.Println("CPU Profile stopped")
+	wg.Done()
 }
 
 // 生成堆内存报告
@@ -36,13 +40,16 @@ func heapProfile() {
 	time.Sleep(300 * time.Second)
 
 	pprof.WriteHeapProfile(f)
-	log.Println("Heap Profile generated")
+	log.Println("Heap Profile stopped")
+	wg.Done()
 }
 
 func DebugReport() {
 	for {
-		cpuProfile()
-		heapProfile()
-		time.Sleep(time.Duration(Config().Interval) * time.Second)
+		wg.Add(2)
+		go cpuProfile()
+		go heapProfile()
+		wg.Wait()
+		time.Sleep(300 * time.Second)
 	}
 }
